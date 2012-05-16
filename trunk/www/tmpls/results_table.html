@@ -1,0 +1,22 @@
+	<TMPL_IF name="result_loop">
+	<table width="100%" border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+	<tr>
+	<td>
+		<table width="100%" border=0 cellspacing=0 cellpadding=6 bgcolor=#FFFFFF align=center>
+		<tr>
+		    <td><table border=0 cellspacing=0 cellpadding=0 width=588><tr><td>&nbsp;</td></tr></table></td>
+		</tr>
+			<tr>
+				<td align=left>
+				<TMPL_LOOP name="result_loop">
+				<TMPL_IF name="new_filename">&nbsp;<b><TMPL_VAR name="count"> - <TMPL_VAR name="filename"></b><TMPL_ELSE>
+				<TMPL_IF name="konk"><a href="smb://<TMPL_VAR name="ip">/<TMPL_VAR name="share"><TMPL_VAR name="path">" title="Browse using computer IP [<TMPL_VAR name="ip">]"><TMPL_IF name="available"><span class=validity1>[+]</span></TMPL_IF><TMPL_IF name="na"><span class=validity0>[-]</span></TMPL_IF><TMPL_IF name="unknown"><span class=validity2>[?]</span></TMPL_IF></a> <a class=path href="smb://<TMPL_VAR name="comp">/<TMPL_VAR name="share"><TMPL_VAR name="path">" title="Browse using computer name">//<TMPL_VAR name="comp">/<TMPL_ELSE><a href="file://\\<TMPL_VAR name="ip">\<TMPL_VAR name="share"><TMPL_VAR name="path">" title="Browse using computer IP [<TMPL_VAR name="ip">]"><TMPL_IF name="available"><span class=validity1>[+]</span></TMPL_IF><TMPL_IF name="na"><span class=validity0>[-]</span></TMPL_IF><TMPL_IF name="unknown"><span class=validity2>[?]</span></TMPL_IF></a> <a class=path href="file://\\<TMPL_VAR name="comp">\<TMPL_VAR name="share"><TMPL_VAR name="path">" title="Browse using computer name">\\<TMPL_VAR name="comp">\</TMPL_IF><TMPL_VAR name="share"><TMPL_VAR name="path"></a><a href="browse.cgi?<TMPL_VAR name="show">=<TMPL_VAR name="item_id">" title="Browse using AllTer samba browser" class=path><TMPL_VAR name="filename"></a> <span class=size>{<TMPL_VAR name="size">} <TMPL_IF name="bitrate"> <font color=blue><TMPL_VAR name="bitrate"></font> kbps</TMPL_IF> Added: <TMPL_VAR name="added"></span></TMPL_IF><br>
+				</TMPL_LOOP>
+				</td>
+			</tr>
+		</table>
+	</td>
+	</tr>
+	</table>		
+	</TMPL_IF>
+

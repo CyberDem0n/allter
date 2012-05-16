@@ -1,0 +1,62 @@
+<html>
+	<head>
+		<title>AllTer:-> Help</title>
+		<link href="alter.css" type="text/css" rel=StyleSheet>
+		<meta http-equiv="content-type" content="text/html;charset=koi8-r">
+	</head>
+	
+<body bgcolor="#ffffff" text="#000000">
+<!--#include virtual="tmpls/top_table.html"-->
+		<br>
+<table width=100% border=0 cellspacing=0 cellpadding=1 bgcolor=#000000>
+<tr>
+	<td>
+	<table width=100% border=0 cellspacing=0 cellpadding=10 bgcolor=#FFFFFF>
+	<tr>
+		<td>
+<br>
+Поиск производится внутри базы данных, которая постоянно изменяется (сканирование производится непрерывно).<br>
+В зависимости от <a href="configure.cgi">индивидуальных настроек</a> сканирование может производиться с интервалом от одного раза в <b>6</b> часов, до одного раза в месяц.
+Поиск производится по <a href=.>именам</a> файлов и директорий содержащимся в локальной сети, а также по <a href=msearch.cgi>ID3 тегам</a> (информации содержащайся внутри mp3 файла). <br><br>
+В качестве параметров поиска может быть указан тип данных:
+<ul><li><font color=#000000>по всем данным</font></li>
+<li><font color=#000000>только по именам файлов</font></li>
+<li><font color=#000000>только по директориям</font></li>
+<li><font color=#000000>только аудио (файлы с расширениями mp3,flac,wma,mpc,...)</font></li>
+<li><font color=#000000>только video (файлы с расширениями avi,mpg,asf,wmv,mpeg,mkv,...)</font></li></ul>
+а так же размер файла и предполагаемая дата его добавления в базу данных (искать в добавленном за последний день, неделю и месяц).
+<br>
+<br>
+<b>Формат запроса.</b><br>
+Поиск ведется по маскам:<br>
+<b>?</b> - любой символ<br>
+<b>*</b> - любые символы в любом количестве<br>
+Если Вы хотите чтобы имя файла начиналось и/или заканчивалось строго определённой последовательностью,<br> то тут на помощь придет символ "<b>/</b>".<br>
+Пример: "<b>/высоцкий</b>" - будут найдены имена фалов начинающиеся на "высоцкий"<br><br>
+Еще пример, будем искать песенку группы Roxette, Milk and Toast and Honey.<br>
+В этом случае запрос должен выглядеть так: "<b>Milk*and*Toast*and*Honey</b>" или так: "<b>Milk*Toast*Honey</b>"<br>
+В результатах поиска будет как <b>03. Milk and Toast and Honey.mp3</b>,<br> так и <b>Roxette_milk_and_toast_and_honey.kar</b> (прошу обратить внимание на символы прочерков в имени файла!!!!).<br>
+
+В случае отсутствия знака "<b>/</b>" в начала или конце строки запроса, строка автоматически дополняется знаком <b>*</b>.<br>
+<br>
+Все вышеописанное также справедливо для поиска по ID3 тегам.<br>
+<br>
+Любые замечания и предложения по работе поисковика принимаются на allter.mipt@gmail.com
+</font>
+		</td>
+	</tr>
+	</table>
+	</td>
+</tr>
+</table>
+		<br>
+<center><table cellspacing=0 cellpadding=3 border=0>
+<tr>
+<td><!--#include virtual="tmpls/stat_table.html"--></td>
+<td><!--#include virtual="tmpls/copyright.html"--></td>
+</tr>
+</table>
+</center>
+<script language=JavaScript src="nf.js"></script>
+</body>
+</html>

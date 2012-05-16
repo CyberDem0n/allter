@@ -1,0 +1,111 @@
+a:link {
+	text-decoration: none;
+	color: #004080;
+}
+a:hover {
+	color: #000000;
+	text-decoration: underline;
+}
+a:visited {
+	text-decoration: none;
+	color: #004080;
+}
+li {
+	color: #004080;
+	margin-left: 20px;
+}
+.name {
+	font-size: 12px;
+	font-family: verdana, tahoma, sans-serif;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+.logo {
+	color: white;
+	font-size: 28px;
+	font-weight: bold;
+	font-family: courier new, verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.big {
+	color: #004080;
+	font-size: 28px;
+	font-weight: bold;
+	font-family: courier new, verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.special {
+	color: black;
+	font-size: 46px;
+
+	vertical-align: middle;
+
+}
+.validity0 {
+	color: red;
+	font-size: 14px;
+	font-weight: bold;
+	font-family: courier new, verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.validity1 {
+	color: green;
+	font-size: 14px;
+	font-weight: bold;
+	font-family: courier new, verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.validity2 {
+	color: blue;
+	font-size: 14px;
+	font-weight: bold;
+	font-family: courier new, verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+
+.ip {
+	font-size: 14px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.path {
+	font-size: 14px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.size {
+	font-size: 14px;
+	font-family: verdana, arial, helvetica, sans-serif;
+	vertical-align: middle;
+}
+.copy {
+	font-size: 10px;
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+
+p.f {
+	font-size: 14px;
+	margin: 0px;
+	margin-left: 5px;
+	font-family: arial, helvetica, sans-serif;
+}
+
+p.d {
+	font-size: 14px;
+	margin: 0px;
+	margin-left: 15px;
+	font-family: arial, helvetica, sans-serif;
+	text-align: justify;
+}
+
+a.p {
+	color: green;
+	font-weight: bold;
+	font-family: arial, helvetica, sans-serif;
+}
+
+a.n {
+	color: red;
+	font-weight: bold;
+	font-family: arial, helvetica, sans-serif;
+}

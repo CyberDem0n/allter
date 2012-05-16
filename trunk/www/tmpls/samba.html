@@ -1,0 +1,75 @@
+<html>
+	<head>
+		<title>AllTer:-> Samba Browser</title>
+		<link href="alter.css" type="text/css" rel=StyleSheet>
+		<meta http-equiv=Content-Type content="text/html; charset=koi8-r">
+	</head>
+	
+	<body bgcolor="#ffffff" text="#000000">
+<TMPL_INCLUDE name="top_table.html">
+		<br>
+	<table width="100%" border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+		<tr>
+			<td>
+				<table width="100%" border=0 cellspacing=0 cellpadding=6 bgcolor=#FFFFFF>
+					<tr>
+						<td><div style="width: 120px; line-height: 1px;">&nbsp;</div></td>
+						<td bgcolor=#638cb6 class=name><TMPL_LOOP name="char_loop"><TMPL_IF name="selected"><TMPL_VAR name="char"><TMPL_ELSE><a href="<TMPL_VAR name="script_name">?fc=<TMPL_VAR name="char">"><TMPL_VAR name="char"></a></TMPL_IF> &nbsp; </TMPL_LOOP></td>
+					</tr>
+					<tr>
+						<td class=name bgcolor=#638cb6 valign=top align=right width=120>
+						<TMPL_LOOP name="comp_loop">
+						<TMPL_IF name="selected"><b><TMPL_VAR name="comp_name"></b><TMPL_ELSE><a href="<TMPL_VAR name="script_name">?comp=<TMPL_VAR name="comp_uid">" title="IP [<TMPL_VAR name="comp_ip">]"><TMPL_VAR name="comp_name"></a></TMPL_IF><br></TMPL_LOOP>
+						</td>
+						<td valign=top>
+						<div style="width: 456px; line-height: 1px;">&nbsp;</div>
+						<table width=100% cellspacing=0 cellpadding=0 border=0>
+						<form>
+						<tr>
+							<td colspan=5 height=30>
+							<TMPL_LOOP name="share_loop">[<TMPL_IF name="selected"><b><TMPL_VAR name="share_name"></b><TMPL_ELSE><a href="<TMPL_VAR name="script_name">?share=<TMPL_VAR name="share_uid">"><TMPL_VAR name="share_name"></a></TMPL_IF>] </TMPL_LOOP>
+							</td>
+						</tr>
+						<tr>
+							<td colspan=5 height=30 class=name style="font-size:16px;"> &nbsp;&nbsp;<TMPL_IF name="available"><span class=validity1>[+]</span></TMPL_IF><TMPL_IF name="na"><span class=validity0>[-]</span></TMPL_IF><TMPL_IF name="unknown"><span class=validity2>[?]</span></TMPL_IF><a href="file://\\<TMPL_VAR name="ip">\<TMPL_VAR name="share"><TMPL_VAR name="path">"><TMPL_VAR name="ip"></a> &nbsp;&nbsp;<a href="file://\\<TMPL_VAR name="comp">\<TMPL_VAR name="share"><TMPL_VAR name="path">">\\<TMPL_VAR name="comp">\<TMPL_VAR name="share"><TMPL_VAR name="path"></a> <TMPL_IF name="admin"><input type=submit style="font-size:12px;" value=Update><input type=hidden name="<TMPL_VAR name="sel_name">" value="<TMPL_VAR name="sel_value">"></TMPL_IF></td>
+						</tr>
+						<tr align=left>
+									<td>|&nbsp;Name&nbsp;</td>
+									<td>|&nbsp;Size&nbsp;</td>
+									<td>|&nbsp;Changed&nbsp;</td>
+									<td>|&nbsp;Added&nbsp;</td>
+									<td width=30>&nbsp;</td>
+						</tr>
+						<TMPL_IF name="up"><tr bgcolor=#EEEEF0><td colspan=5>|&nbsp;<span class=name style="font-size:16px;"><a href="<TMPL_VAR name="script_name">?<TMPL_VAR name="show">=<TMPL_VAR name="up">">..</a></span></td></tr></TMPL_IF>
+						<TMPL_LOOP name="content_loop">
+						<tr<TMPL_IF name="bg"> bgcolor=#EEEEF0</TMPL_IF> align=left>
+							<td height=20>|<TMPL_IF name="chbox"><input type=hidden name="ods_<TMPL_VAR name="content_uid">"<TMPL_IF name="checked">value=on</TMPL_IF>><input type=checkbox title="Deny scan (if checked)" name="ds_<TMPL_VAR name="content_uid">"<TMPL_IF name="checked"> checked</TMPL_IF>></TMPL_IF>&nbsp;<TMPL_IF name="dir"><a href="<TMPL_VAR name="script_name">?dir=<TMPL_VAR name="content_uid">"><TMPL_VAR name="content_name"></a><TMPL_ELSE><TMPL_VAR name="content_name"></TMPL_IF>&nbsp;</td>
+							<td>|&nbsp;<TMPL_VAR name="size">&nbsp;</td>
+							<td>|&nbsp;<TMPL_VAR name="mtime">&nbsp;</td>
+							<td>|&nbsp;<TMPL_VAR name="added">&nbsp;</td>
+							<td width=30>&nbsp;</td>
+						</tr></TMPL_LOOP>
+						</form>
+						</table>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+
+	</td>
+	</tr>
+	</table>
+	
+<br>
+<center><table cellspacing=0 cellpadding=3 border=0>
+<tr>
+<td><TMPL_INCLUDE name="stat_table.html"></td>
+<td><TMPL_INCLUDE name="copyright.html"></td>
+</tr>
+</table>
+</center>
+<script language=JavaScript src="nf.js"></script>
+</body>
+</html>
