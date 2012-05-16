@@ -1,0 +1,137 @@
+<html>
+	<head>
+		<title>AllTer:-> Advanced mp3 Search</title>
+		<link href="alter.css" type="text/css" rel=StyleSheet>
+		<meta http-equiv=Content-Type content="text/html; charset=koi8-r">
+	</head>
+	
+<body bgcolor="#ffffff" text="#000000">
+<TMPL_INCLUDE name="top_table.html">
+		<br>
+		
+		<form method=post>
+			<table width="100%" border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+			<tr>
+				<td>
+				<table width="100%" border=0 cellspacing=0 cellpadding=0 bgcolor=#FFFFFF align=center>
+				<tr>
+					<td align=center>
+						<table width=600 border=0 cellspacing=0 cellpadding=0 bgcolor=#638cb6>
+							<tr>
+								<td align=left class=name style="font-size: 16px;">
+								&nbsp;&nbsp;AllTer mp3 Searcher
+								</td>
+							</tr>
+							<tr>
+								<td align=center>
+									<table border=0 cellspacing=2 cellpadding=0>
+									<tr><td align=right class=name>Artist:</td>
+										<td colspan=4><input type=text size=28 name=artist value="<TMPL_VAR name="artist">">
+									</td></tr>
+									<tr><td align=right class=name>Title:</td>
+										<td colspan=4><input type=text size=28 name=title value="<TMPL_VAR name="title">">
+									</td></tr>
+									<tr><td align=right class=name>Album:</td>
+										<td colspan=4><input type=text size=28 name=album value="<TMPL_VAR name="album">">
+									</td></tr>
+									<tr><td align=right class=name>Comment:</td>
+										<td colspan=4><input type=text size=28 name=comment value="<TMPL_VAR name="comment">">
+									</td></tr>
+									<tr><td align=right class=name>Genre:</td>
+										<td colspan=4 align=right>
+										<select name=genre>
+											<option value=all>All genres</option><TMPL_LOOP name="genre_select">
+											<option value="<TMPL_VAR name="genre_id">"<TMPL_IF name="selected"> selected</TMPL_IF>><TMPL_VAR name="genre_name"></option></TMPL_LOOP>
+										</select>
+									</td></tr>
+									<tr><td align=right class=name>Year:</td>
+										<td><input type=text size=5 name=year value="<TMPL_VAR name="year">"></td>
+										<td align=right class=name>Bitrate&gt;=</td>
+									<td align=left>
+										<input type=text size=4 name=min_bitrate value="<TMPL_VAR name="min_bitrate">"></td>
+									<td align=right><input class=button type=submit value=search>
+									</td></tr>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			</table>
+		</form>
+
+		<br>
+
+<TMPL_IF name="not_found">
+<TMPL_INCLUDE name="not_found.html">
+<TMPL_ELSE>
+<TMPL_INCLUDE name="results_table.html">
+</TMPL_IF>
+<TMPL_VAR name="results">
+<TMPL_IF name="result_loop">
+		<br>
+		<br>
+		
+		<form method=post>
+			<table  width=600" border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+				<tr>
+					<td>
+						<table width="100%" border=0 cellspacing=0 cellpadding=0 bgcolor=#638cb6>
+							<tr><td>&nbsp;</td></tr>
+							<tr>
+								<td align=center>
+									<table border=0 cellspacing=2 cellpadding=0>
+									<tr><td align=right class=name>Artist:</td>
+										<td colspan=4><input type=text size=28 name=artist value="<TMPL_VAR name="artist">">
+									</td></tr>
+									<tr><td align=right class=name>Title:</td>
+										<td colspan=4><input type=text size=28 name=title value="<TMPL_VAR name="title">">
+									</td></tr>
+									<tr><td align=right class=name>Album:</td>
+										<td colspan=4><input type=text size=28 name=album value="<TMPL_VAR name="album">">
+									</td></tr>
+									<tr><td align=right class=name>Comment:</td>
+										<td colspan=4><input type=text size=28 name=comment value="<TMPL_VAR name="comment">">
+									</td></tr>
+									<tr><td align=right class=name>Genre:</td>
+										<td colspan=4 align=right>
+										<select name=genre>
+											<option value=all>All genres</option><TMPL_LOOP name="genre_select">
+											<option value="<TMPL_VAR name="genre_id">"<TMPL_IF name="selected"> selected</TMPL_IF>><TMPL_VAR name="genre_name"></option></TMPL_LOOP>
+										</select>
+									</td></tr>
+									<tr><td align=right class=name>Year:</td>
+										<td><input type=text size=5 name=year value="<TMPL_VAR name="year">"></td>
+										<td align=right class=name>Bitrate&gt;=</td>
+									<td align=left>
+										<input type=text size=4 name=min_bitrate value="<TMPL_VAR name="min_bitrate">"></td>
+									<td align=right><input class=button type=submit value=search>
+									</td></tr>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td align=right class=name style="font-size: 16px;">AllTer mp3 Searcher&nbsp;&nbsp;</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+</TMPL_IF>
+<center><table cellspacing=0 cellpadding=3 border=0>
+<tr>
+<td><TMPL_INCLUDE name="stat_table.html"></td>
+<td><TMPL_INCLUDE name="copyright.html"></td>
+</tr>
+</table>
+</center>
+<script language=JavaScript src="nf.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<html>
+	<head>
+		<title>AllTer:-> Scan Configure</title>
+		<link href="alter.css" type="text/css" rel=StyleSheet>
+		<meta http-equiv=Content-Type content="text/html; charset=koi8-r">
+	</head>
+	
+<body bgcolor="#ffffff" text="#000000">
+<TMPL_INCLUDE name="top_table.html">
+		<br>
+			<table width="100%" border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+			<tr>
+				<td>
+				<table width="100%" border=0 cellspacing=0 cellpadding=0 bgcolor=#FFFFFF align=center>
+				<tr>
+					<td align=center>
+						<table width=600 border=0 cellspacing=0 cellpadding=0 bgcolor=#638cb6>
+							<tr>
+								<td class=name>&nbsp;</td>
+							</tr>
+							<tr>
+								<td align=center>
+									<table border=0 cellspacing=2 cellpadding=0>
+									<form method=post>
+									<input type=hidden name=action value=update><TMPL_IF name="error">
+									<tr>
+										<td>&nbsp;</td>
+										<td colspan=2 class=name><TMPL_VAR name="error"><br>Report all problems to allter.mipt@gmail.com</td>
+									</tr></TMPL_IF>
+									<tr>
+										<td class=name align=right>&nbsp;</td>
+										<td colspan=2 class=name style="font-color:#000000">Your IP address: <TMPL_VAR name="comp_ip"></td>
+									</tr>
+									<tr><td colspan=3>&nbsp;</td></tr>
+									<tr>
+										<td class=name>&nbsp;</td>
+										<td class=name colspan=2>Netbios name: <input type=text name=comp_name value="<TMPL_VAR name="comp_name">"></td>
+									</tr>
+									<tr><td colspan=3>&nbsp;</td></tr>
+									<tr>
+										<td class=name>&nbsp;</td>
+										<td colspan=2 class=name><input type=checkbox name=allow_scan<TMPL_IF name="allow_scan"> checked</TMPL_IF>> Allow scan your computer</td>
+									</tr>
+									<tr><td colspan=3>&nbsp;</td></tr>
+									<TMPL_LOOP name="shares_loop">
+									<tr>
+										<td class=name align=right>[<TMPL_VAR name="share_name">]&nbsp;&nbsp;</td>
+										<td><input type=checkbox name=share_ch<TMPL_VAR name="uid"><TMPL_IF name="allow_scan"> checked</TMPL_IF>> scan this share every
+										<td>
+										<select name=share_int<TMPL_VAR name="uid">>
+											<option value=6h<TMPL_IF name="6h"> selected</TMPL_IF>>6 hours</option>
+											<option value=12h<TMPL_IF name="12h"> selected</TMPL_IF>>12 hours</option>
+											<option value=1d<TMPL_IF name="1d"> selected</TMPL_IF>>1 day</option>
+											<option value=2d<TMPL_IF name="2d"> selected</TMPL_IF>>2 days</option>
+											<option value=3d<TMPL_IF name="3d"> selected</TMPL_IF>>3 days</option>
+											<option value=1w<TMPL_IF name="1w"> selected</TMPL_IF>>1 week</option>
+											<option value=2w<TMPL_IF name="2w"> selected</TMPL_IF>>2 weeks</option>
+											<option value=1m<TMPL_IF name="1m"> selected</TMPL_IF>>1 month</option>
+										</select>
+										</td>
+									</tr>
+									</TMPL_LOOP>
+									<TMPL_IF name="REMOTE_ADDR"><input type=hidden name=REMOTE_ADDR value="<TMPL_VAR name="REMOTE_ADDR">"></TMPL_IF>
+									<tr><td colspan=3 align=right><input type=submit value="Update settings"></td></tr>
+									</form>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			</table>
+<br>
+<center><table cellspacing=0 cellpadding=3 border=0>
+<tr>
+<td><TMPL_INCLUDE name="stat_table.html"></td>
+<td><TMPL_INCLUDE name="copyright.html"></td>
+</tr>
+</table>
+</center>
+<script language=JavaScript src="nf.js"></script>
+</body>
+</html>

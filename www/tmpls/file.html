@@ -1,0 +1,164 @@
+<html>
+	<head>
+		<title>AllTer:-> File Search</title>
+		<link href="alter.css" type="text/css" rel=StyleSheet>
+		<meta http-equiv=Content-Type content="text/html; charset=koi8-r">
+		<link rel="search" type="application/opensearchdescription+xml" title="Allter File search" href="/opensearch.xml" /> 
+	</head>
+	
+<body bgcolor="#ffffff" text="#000000">
+<TMPL_INCLUDE name="top_table.html">
+		<br>
+		<form method=post>
+			<table width="100%" border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+			<tr>
+				<td>
+				<table width="100%" border=0 cellspacing=0 cellpadding=0 bgcolor=#FFFFFF align=center>
+				<tr>
+					<td align=center>
+						<table width=600 border=0 cellspacing=0 cellpadding=0 bgcolor=#638cb6>
+							<tr>
+								<td width="80%" align=left class=name style="font-size: 16px;">
+									&nbsp;&nbsp; AllTer file Searcher
+								</td>
+								<td width="20%">&nbsp;</td>
+							</tr>
+							<tr>
+								<td align=right>
+									<input type=text class=text size=35 name=search value="<TMPL_VAR name="search">">&nbsp;
+									<input class=button type=submit value=search>
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+							<tr>
+								<td align=right class=name>
+									Looking for 
+									<select name=type>
+										<option value=0<TMPL_IF name="type_0"> selected</TMPL_IF>>All</option>
+										<option value=1<TMPL_IF name="type_1"> selected</TMPL_IF>>Files</option>
+										<option value=2<TMPL_IF name="type_2"> selected</TMPL_IF>>Folders</option>
+										<option value=3<TMPL_IF name="type_3"> selected</TMPL_IF>>Music</option>
+										<option value=4<TMPL_IF name="type_4"> selected</TMPL_IF>>Video</option>
+									</select>, added in the last
+									<select name=added>
+										<option value=0>---</option>
+										<option value=86400<TMPL_IF name="day"> selected</TMPL_IF>>Day</option>
+										<option value=604800<TMPL_IF name="week"> selected</TMPL_IF>>Week</option>
+										<option value=2592000<TMPL_IF name="month"> selected</TMPL_IF>>Month</option>
+									</select>
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+							<tr>
+								<td align=right>
+									<span class=name>and it's size from </span>
+									<input type=text size=10 name=min_size value="<TMPL_VAR name="min_size">">
+									<span class=name>up to </span>
+									<input type=text size=10 name=max_size value="<TMPL_VAR name="max_size">">
+									<span class=name>bytes</span>
+									<br>
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+							<tr>
+								<td align=right>
+									<span class=name>mp3 bitrate more or equal <input type=text name=min_bitrate size=5 value="<TMPL_VAR name="min_bitrate">">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			</table>
+		</form>
+
+		<br>
+<TMPL_UNLESS name="not_found"><TMPL_UNLESS name="results_loop"><img src="/cgi-bin/count.cgi"></TMPL_UNLESS></TMPL_UNLESS>
+<TMPL_IF name="not_found">
+<TMPL_INCLUDE name="not_found.html">
+<TMPL_ELSE>
+<TMPL_INCLUDE name="results_table.html">
+</TMPL_IF>
+<TMPL_VAR name="results">
+<TMPL_IF name="result_loop">
+		<br>
+		<br>
+		
+		<form method=post>
+			<table  width=600 border=0 cellspacing=0 cellpadding=1 bgcolor=#000000 align=center>
+				<tr>
+					<td>
+						<table width="100%" border=0 cellspacing=0 cellpadding=0 bgcolor=#638cb6>
+							<tr>
+								<td width="80%">&nbsp;</td>
+								<td width="20%">&nbsp;</td>
+							</tr>
+							<tr>
+								<td align=right>
+									<input type=text class=text size=35 name=search value="<TMPL_VAR name="search">">&nbsp;
+									<input class=button type=submit value=search>
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+							<tr>
+								<td align=right class=name>
+									Looking for 
+									<select name=type>
+										<option value=0<TMPL_IF name="type_0"> selected</TMPL_IF>>All</option>
+										<option value=1<TMPL_IF name="type_1"> selected</TMPL_IF>>Files</option>
+										<option value=2<TMPL_IF name="type_2"> selected</TMPL_IF>>Folders</option>
+										<option value=3<TMPL_IF name="type_3"> selected</TMPL_IF>>Mp3's</option>
+										<option value=4<TMPL_IF name="type_4"> selected</TMPL_IF>>Video's</option>
+									</select>, added in the last
+									<select name=added>
+										<option value=0>---</option>
+										<option value=86400<TMPL_IF name="day"> selected</TMPL_IF>>Day</option>
+										<option value=604800<TMPL_IF name="week"> selected</TMPL_IF>>Week</option>
+										<option value=2592000<TMPL_IF name="month"> selected</TMPL_IF>>Month</option>
+									</select>
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+							<tr>
+								<td align=right>
+									<span class=name>and it's size from </span>
+									<input type=text size=10 name=min_size value="<TMPL_VAR name="min_size">">
+									<span class=name>up to </span>
+									<input type=text size=10 name=max_size value="<TMPL_VAR name="max_size">">
+									<span class=name>bytes</span>
+									<br>
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2>&nbsp;</td></tr>
+							<tr>
+								<td align=right>
+									<span class=name>mp3 bitrate more or equal <input type=text name=min_bitrate size=5 value="<TMPL_VAR name="min_bitrate">">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr><td colspan=2 align=right class=name style="font-size: 16px;">AllTer file Searcher&nbsp;&nbsp;</td></tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+</TMPL_IF>
+<br>
+<TMPL_INCLUDE name="stat_table.html">
+<br><br>
+<TMPL_INCLUDE name="copyright.html">
+<script language=JavaScript>
+	document.forms[0].search.focus();
+</script>
+	</body>
+</html>

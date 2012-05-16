@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="KOI8-R" ?> 
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>Allter</ShortName> 
+  <Description>Allter File search</Description> 
+  <Image width="16" height="16" type="image/x-icon">http://allter.mipt.ru/favicon.ico</Image> 
+  <Url type="text/html" template="http://allter.mipt.ru/?search={searchTerms}&amp;type=0&amp;added=0&amp;min_size=&amp;max_size=&amp;min_bitrate=&amp;from=os" /> 
+  <Tags>allter local mipt</Tags>
+  <InputEncoding>KOI8-R</InputEncoding> 
+</OpenSearchDescription>
