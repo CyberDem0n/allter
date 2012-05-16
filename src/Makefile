@@ -1,7 +1,7 @@
 prefix		:= /home/allter
 wwwroot		:= $(prefix)/www
 
-FSEARCH_DEFINES		:= -DTMPL_PATH=\"$(wwwroot)/tmpls/\" -DLOG_PATH=\"$(prefix)/logs/query/\" -DINDEX_PATH=\"$(prefix)/index/\" -DADMIN_IP_ADDRESS=\"127.0.0.1\"
+FSEARCH_DEFINES	:= -DTMPL_PATH=\"$(wwwroot)/tmpls/\" -DLOG_PATH=\"$(prefix)/logs/query/\" -DINDEX_PATH=\"$(prefix)/index/\" -DADMIN_IP_ADDRESS=\"127.0.0.1\"
 COUNTER_DEFINES	:= -DDB_FILE=\"$(prefix)/logs/count/counter.dat\" -DDB_LOG_FILE=\"$(prefix)/logs/count/all.txt\"
 MYSQL_DEFINES	:= -DDB_HOST=\"localhost\" -DDB_USER=\"root\" -DDB_PASSWD=\"\" -DDB_BASE=\"allter\"
 PINGER_DEFINES	:= -DPING_FILES_CFG=\"$(prefix)/pinger/ping_files.cfg\"

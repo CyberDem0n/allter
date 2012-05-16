@@ -84,7 +84,7 @@ private:
 					path.goUp();
 					return ret - 1;
 				} else if (ret == 1) {
-					printf("SELF LOOPING %d:%s:%s\n", item->uid(), path.path(), item->name());
+					printf("SELF LOOPING %u:%s:%s\n", item->uid(), path.path(), item->name());
 					item->forbidScan();
 					path.drop("");
 				}
