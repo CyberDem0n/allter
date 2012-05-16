@@ -159,7 +159,7 @@ bool Path::loadFromDB() {
 
 bool Path::insertIntoDB() {
 	char *path = _db.escape(_path);
-	_path_info[_deep].uid = _db.insert("INSERT INTO paths VALUES(NULL,'%s',%d,%d)", path, _share, p2f());
+	_path_info[_deep].uid = _db.insert("INSERT INTO paths VALUES(NULL,'%s',%u,%u)", path, _share, p2f());
 	delete [] path;
 	return (_path_info[_deep].uid > 0);
 }
@@ -180,8 +180,8 @@ void Path::drop(const char *name) {
 	char *full_path = _db.escape(_path);
 	_path[oldlen] = '\0';
 
-	_db.query("DELETE paths2files FROM paths, paths2files WHERE share=%d AND name LIKE '%s%%' AND path=paths.uid", _share, full_path);
-	_db.query("DELETE FROM paths WHERE share=%d AND name like '%s%%'", _share, full_path);
+	_db.query("DELETE paths2files FROM paths, paths2files WHERE share=%u AND name LIKE '%s%%' AND path=paths.uid", _share, full_path);
+	_db.query("DELETE FROM paths WHERE share=%u AND name like '%s%%'", _share, full_path);
 	delete [] full_path;
 }
 
@@ -204,7 +204,7 @@ void Path::updateInDB() {
 	std::list<unsigned int> free_ids;
 	std::list<Dirent *>::iterator it = list->begin();
 
-	if (!_db.query("SELECT p2f.uid,f.uid,UCASE(name),type,size,mtime,add_info from paths2files p2f,files f WHERE path=%d AND file=f.uid ORDER BY UCASE(name)", this->uid())
+	if (!_db.query("SELECT p2f.uid,f.uid,UCASE(name),type,size,mtime,add_info from paths2files p2f,files f WHERE path=%u AND file=f.uid ORDER BY UCASE(name)", this->uid())
 			|| !(res = _db.results())) {
 		new_items = list;
 		goto add_new_files;
@@ -294,7 +294,7 @@ add_new_files:
 	}
 
 	while (del != free_ids.end()) {
-		_db.query("DELETE FROM paths2files WHERE uid=%d", *del);
+		_db.query("DELETE FROM paths2files WHERE uid=%u", *del);
 		del++;
 	}
 

@@ -27,7 +27,7 @@ const char *Share::escaped_name() {
 bool Share::loadFromDB() {
 	MYSQL_RES *res;
 
-	if (_db.query("SELECT uid,updated,update_interval,pres,allow_scan,size FROM shares WHERE host=%d AND name='%s'", _hostId, escaped_name())
+	if (_db.query("SELECT uid,updated,update_interval,pres,allow_scan,size FROM shares WHERE host=%u AND name='%s'", _hostId, escaped_name())
 			&& (res = _db.results())) {
 		MYSQL_ROW row = mysql_fetch_row(res);
 		if (row) {
@@ -47,16 +47,16 @@ bool Share::loadFromDB() {
 }
 
 bool Share::insertIntoDB() {
-	_uid = _db.insert("INSERT INTO shares(name,host,updated,update_interval,pres,allow_scan,size) VALUES('%s',%d,%d,%d,%d,%d,%llu)", escaped_name(), _hostId, _updated, _update_interval, _presented, _allow_scan, _size);
+	_uid = _db.insert("INSERT INTO shares(name,host,updated,update_interval,pres,allow_scan,size) VALUES('%s',%u,%u,%u,%u,%d,%llu)", escaped_name(), _hostId, _updated, _update_interval, _presented, _allow_scan, _size);
 	return (_uid > 0);
 }
 
 void Share::updateInDB(time_t presented) {
 	if (_presented != presented)
-		_db.query("UPDATE shares SET pres=%d WHERE uid=%d", (_presented=presented), _uid);
+		_db.query("UPDATE shares SET pres=%u WHERE uid=%u", (_presented=presented), _uid);
 }
 
 void Share::updateInDB(time_t presented, time_t updated, uint64_t size) {
 	if (_presented != presented || _updated != updated || _size != size)
-		_db.query("UPDATE shares SET pres=%d, updated=%d, size=%llu WHERE uid=%d", (_presented=presented), (_updated = updated), (_size=size), _uid);
+		_db.query("UPDATE shares SET pres=%u, updated=%u, size=%llu WHERE uid=%u", (_presented=presented), (_updated = updated), (_size=size), _uid);
 }
