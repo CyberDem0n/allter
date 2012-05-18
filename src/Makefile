@@ -8,15 +8,22 @@ PINGER_DEFINES	:= -DPING_FILES_CFG=\"$(prefix)/pinger/ping_files.cfg\"
 
 programs	:= crawler indexer searcher fsearch.cgi
 
+
 compile_flags	:= -Wall -ggdb -MD -pipe `mysql_config --cflags`
 link_flags	:= -s -pipe
+mysql_ldflags	:= `mysql_config --libs`
+
+libsmbclient = $(shell ls /usr/lib*/libsmbclient.a 2> /dev/null | head -n 1)
+ifneq ($(libsmbclient),)
+	compile_flags := $(compile_flags) -DHAVE_STATIC_LIBSMBCLIENT
+endif
 
 db_dir		:= db
 web_dir		:= web
 libsearch_dir	:= libsearch
 
-crawler_subdirs	:= client structs
-crawler_objs	:= crawler.cpp $(wildcard $(addsuffix /*.cpp, $(crawler_subdirs) $(db_dir)))
+crawler_subdirs	:= client structs libs
+crawler_objs	:= crawler.cpp $(wildcard $(addsuffix /*.c*, $(crawler_subdirs) $(db_dir)))
 crawler_objs	:= $(crawler_objs:.cpp=.o)
 
 indexer_objs	:= indexer.cpp $(wildcard $(addsuffix /*.cpp, $(libsearch_dir)))
@@ -33,7 +40,7 @@ source_dirs	:= . $(db_dir) $(libsearch_dir) $(web_dir) $(crawler_subdirs)
 all: $(programs)
  
 crawler: $(crawler_objs)
-	g++ -o $@ $(crawler_objs) $(link_flags) -lsmbclient `mysql_config --libs`
+	g++ -o $@ $(crawler_objs) $(libsmbclient) $(link_flags) -lsmbclient -ltdb $(mysql_ldflags)
  
 indexer: $(indexer_objs)
 	g++ -o $@ $(indexer_objs) $(link_flags)
@@ -42,19 +49,19 @@ searcher: $(searcher_objs)
 	g++ -o $@ $(searcher_objs) $(link_flags)
 
 fsearch.cgi: $(fsearch_objs)
-	g++ -o $@ $(fsearch_objs) $(link_flags) `mysql_config --libs`
+	g++ -o $@ $(fsearch_objs) $(link_flags) $(mysql_ldflags)
 
 %.o: %.cpp
-	g++ -o $@ -c $< $(compile_flags) $(build_flags)
+	g++ -o $@ -c $< $(compile_flags)
 
 web/counter.o:
-	g++ -o $@ -c web/counter.cpp $(compile_flags) $(build_flags) $(COUNTER_DEFINES)
+	g++ -o $@ -c web/counter.cpp $(compile_flags) $(COUNTER_DEFINES)
 
 db/mydb.o:
-	g++ -o $@ -c db/mydb.cpp $(compile_flags) $(build_flags) $(MYSQL_DEFINES)
+	g++ -o $@ -c db/mydb.cpp $(compile_flags) $(MYSQL_DEFINES)
 
 fsearch.o:
-	g++ -o $@ -c fsearch.cpp $(compile_flags) $(build_flags) $(MYSQL_DEFINES) $(FSEARCH_DEFINES)
+	g++ -o $@ -c fsearch.cpp $(compile_flags) $(MYSQL_DEFINES) $(FSEARCH_DEFINES)
 
 .PHONY : clean
 

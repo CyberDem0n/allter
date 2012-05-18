@@ -14,64 +14,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>
 */
-#include <dlfcn.h>
-#include <talloc.h>
 #include <strings.h>
 #include <iostream>
 #include <algorithm>
 #include <string.h>
 #include <errno.h>
 #include "smbclient.h"
+#ifdef HAVE_STATIC_LIBSMBCLIENT
 #include "libsmb_internal.h"
+#else
+#include <libsmbclient.h>
+#endif
 
 const char _smb_prefix[] = "smb://";
-
-#define TALLOC_FREE(ctx) do { talloc_free(ctx); ctx=NULL; } while(0)
-
-// Pointers to internal methods from libsmbclient
-TALLOC_CTX *(*talloc_stackframe)(void);
-
-SMBCSRV *(*SMBC_server)(TALLOC_CTX *ctx, SMBCCTX *context,
-		bool connect_if_not_found, const char *server, const char *share,
-		char **pp_workgroup, char **pp_username, char **pp_password);
-
-bool (*cli_resolve_path)(TALLOC_CTX *ctx, const char *mountpt,
-		const struct user_auth_info *dfs_auth_info, struct cli_state *rootcli,
-		const char *path, struct cli_state **targetcli, char **pp_targetpath);
-
-NTSTATUS (*cli_list)(struct cli_state *cli, const char *mask, uint16 attribute,
-		NTSTATUS(*fn)(const char *, struct file_info *, const char *, void *),
-		void *state);
-
-int (*SMBC_errno)(SMBCCTX *context, struct cli_state *c);
-
-bool (*cli_is_error)(struct cli_state *cli);
-
-bool SmbClient::initialize(void) {
-	static int initialized = 0;
-	void *handle = RTLD_NEXT;
-
-	if (initialized)
-		return initialized==1;
-
-	initialized = -1;
-
-	if (NULL == (*(void **) &talloc_stackframe = dlsym(handle, "talloc_stackframe")))
-		return false;
-	if (NULL == (*(void **) &SMBC_server = dlsym(handle, "SMBC_server")))
-		return false;
-	if (NULL == (*(void **) &cli_resolve_path = dlsym(handle, "cli_resolve_path")))
-		return false;
-	if (NULL == (*(void **) &cli_list = dlsym(handle, "cli_list")))
-		return false;
-	if (NULL == (*(void **) &SMBC_errno = dlsym(handle, "SMBC_errno")))
-		return false;
-	if (NULL == (*(void **) &cli_is_error = dlsym(handle, "cli_is_error")))
-		return false;
-
-	initialized = 1;
-	return true;
-}
 
 SmbClient::SmbClient() : _ctx(NULL), _srv(NULL) {
 	setDebugLevel(0);
@@ -79,10 +34,6 @@ SmbClient::SmbClient() : _ctx(NULL), _srv(NULL) {
 	setUser("GUEST");
 	setPassword("");
 
-	if (!initialize()) {
-		getDirListFn = &SmbClient::ordinaryDirList;
-		std::cerr << "Warning: Unable initialize internal libsmbclient function pointers" << std::endl;
-	} else getDirListFn = &SmbClient::fastDirList;
 	createContext();
 }
 
@@ -175,6 +126,7 @@ void SmbClient::dirListFn(const char *name, DIRENT_TYPE type, uint64_t size, tim
 	_dir_list.push_back(item);
 }
 
+#ifdef HAVE_STATIC_LIBSMBCLIENT
 static NTSTATUS dir_list_fn(const char *mnt, struct file_info *finfo, const char *mask, void *state) {
 	SmbClient *ths = (SmbClient *)state;
 	DIRENT_TYPE type = (finfo->mode&FILE_ATTRIBUTE_DIRECTORY)?TYPE_DIRECTORY:TYPE_COMMON;
@@ -182,7 +134,7 @@ static NTSTATUS dir_list_fn(const char *mnt, struct file_info *finfo, const char
 	return NT_STATUS_OK;
 }
 
-bool SmbClient::fastDirList(const char *dir) {
+bool SmbClient::dirList(const char *dir) {
 	int dirlen = 0;
 	char netpath[2048], *targetpath;
 	struct cli_state *targetcli;
@@ -235,17 +187,59 @@ bool SmbClient::fastDirList(const char *dir) {
 	TALLOC_FREE(frame);
 	return true;
 }
+#else
+bool SmbClient::dirList(const char *dir) {
+	rebuildSmbPath();
+	size_t free = sizeof(_smb_path) - (_path - _smb_path);
+	size_t len = strlen(dir);
+	if (free <= len) return false;
 
-bool SmbClient::ordinaryDirList(const char *dir) {
-	strncpy(_path, dir, sizeof(_smb_path) - (_path - _smb_path));
+	strncpy(_path, dir, free);
+
+	if (_path[len-1] != '/') {
+		_path[len++] = '/';
+		_path[len] = '\0';
+	}
+
+	free -= len;
+
+	struct smbc_dirent *dirent;
+	SMBCFILE *fd = smbc_getFunctionOpendir(_ctx)(_ctx, _smb_path);
+
+	if (NULL == fd)
+		throw std::string(strerror(errno));
+
+	while ((dirent = smbc_getFunctionReaddir(_ctx)(_ctx, fd)) != NULL) {
+		if (!(dirent->smbc_type == SMBC_FILE || dirent->smbc_type == SMBC_DIR))
+			continue;
+		if (dirent->name[0] == '\0' || 0 == strcmp(dirent->name, ".") ||
+				0 == strcmp(dirent->name, "..") || dirent->namelen >= free)
+			continue;
+		struct stat st;
+
+		strncpy(_path + len, dirent->name, free);
+
+		std::cout << _smb_path << std::endl;
+
+		if (0 != smbc_getFunctionStat(_ctx)(_ctx, _smb_path, &st))
+			continue;
+
+		DIRENT_TYPE type = dirent->smbc_type==SMBC_DIR?TYPE_DIRECTORY:TYPE_COMMON;
+		dirListFn(dirent->name, type, st.st_size, st.st_mtim.tv_sec);
+	}
+
+	smbc_getFunctionClosedir(_ctx)(_ctx, fd);
+	smbc_getFunctionPurgeCachedServers(_ctx)(_ctx);
+
 	return true;
 }
+#endif
 
 std::vector<struct my_dirent> SmbClient::getDirList(const char *dir) throw (std::string) {
 	checkShare();
 
 	_dir_list.clear();
-	if (!(*this.*getDirListFn)(dir))
+	if (!dirList(dir))
 		throw std::string(strerror(errno));
 	return _dir_list;
 }
@@ -256,8 +250,14 @@ std::vector<std::string> SmbClient::getShares(void) throw (std::string) {
 	std::vector<std::string> ret;
 	struct smbc_dirent *dirent;
 	SMBCFILE *fd;
+	char backup = _share[0];
+	rebuildSmbPath();
 
-	if ((fd = smbc_getFunctionOpendir(_ctx)(_ctx, _smb_path)) == NULL)
+	fd = smbc_getFunctionOpendir(_ctx)(_ctx, _smb_path);
+	_share[0] = backup;
+	rebuildSmbPath();
+
+	if (NULL == fd)
 		throw std::string(strerror(errno));
 
 	while ((dirent = smbc_getFunctionReaddir(_ctx)(_ctx, fd)) != NULL) {

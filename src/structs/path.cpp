@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <string.h>
 
 #include "path.h"
-#include "md5.h"
+#include "../libs/md5.h"
 
 Path::Path(MyDB &db, unsigned int share) : _db(db), _share(share) {
 	_deep = 0;

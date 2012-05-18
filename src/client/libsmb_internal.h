@@ -20,6 +20,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <stdint.h>
 #include <libsmbclient.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef void TALLOC_CTX;
+#define TALLOC_FREE(ctx) do { talloc_free(ctx); ctx=NULL; } while(0)
+#define talloc_free(ctx) _talloc_free(ctx, __location__)
+#ifndef __location__
+#define __TALLOC_STRING_LINE1__(s)    #s
+#define __TALLOC_STRING_LINE2__(s)   __TALLOC_STRING_LINE1__(s)
+#define __TALLOC_STRING_LINE3__  __TALLOC_STRING_LINE2__(__LINE__)
+#define __location__ __FILE__ ":" __TALLOC_STRING_LINE3__
+#endif
+
 #define FILE_ATTRIBUTE_HIDDEN		0x002L
 #define FILE_ATTRIBUTE_SYSTEM		0x004L
 #define FILE_ATTRIBUTE_DIRECTORY	0x010L
@@ -80,5 +94,33 @@ struct file_info {
 	char *name;
 	char short_name[13 * 3]; /* the *3 is to cope with multi-byte */
 };
+
+// Talloc workaround, because it's header file doesn't take care about c++
+char *talloc_strdup(const void *t, const char *p);
+int _talloc_free(void *ptr, const char *location);
+
+
+ // Pointers to internal methods from libsmbclient
+TALLOC_CTX *talloc_stackframe(void);
+
+SMBCSRV *SMBC_server(TALLOC_CTX *ctx, SMBCCTX *context,
+                bool connect_if_not_found, const char *server, const char *share,
+                char **pp_workgroup, char **pp_username, char **pp_password);
+
+bool cli_resolve_path(TALLOC_CTX *ctx, const char *mountpt,
+                const struct user_auth_info *dfs_auth_info, struct cli_state *rootcli,
+                const char *path, struct cli_state **targetcli, char **pp_targetpath);
+
+NTSTATUS cli_list(struct cli_state *cli, const char *mask, uint16 attribute,
+                NTSTATUS(*fn)(const char *, struct file_info *, const char *, void *),
+                void *state);
+
+int SMBC_errno(SMBCCTX *context, struct cli_state *c);
+
+bool cli_is_error(struct cli_state *cli);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBSMB_INTERNAL_H_ */
