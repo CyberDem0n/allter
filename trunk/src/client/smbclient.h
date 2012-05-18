@@ -34,12 +34,10 @@ private:
 	SMBCSRV *_srv;
 	std::vector<struct my_dirent> _dir_list;
 
-	bool ordinaryDirList(const char *dir);
-	bool fastDirList(const char *dir);
 	void createContext(void) throw(std::string);
 	bool initialize(void);
 	void rebuildSmbPath(void);
-	bool (SmbClient::*getDirListFn)(const char *dir);
+	bool dirList(const char *dir);
 
 public:
 	void dirListFn(const char *name, DIRENT_TYPE type, uint64_t size, time_t mtime);
