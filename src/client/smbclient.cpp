@@ -103,6 +103,10 @@ void SmbClient::rebuildSmbPath(void) {
 	}
 }
 
+void SmbClient::setTimeout(int timeout) {
+	smbc_setTimeout(_ctx, timeout);
+}
+
 void SmbClient::setDebugLevel(int debuglevel) {
 	_debuglevel = debuglevel;
 }
@@ -122,6 +126,9 @@ void SmbClient::setHost(const char *host) {
 }
 
 void SmbClient::dirListFn(const char *name, DIRENT_TYPE type, uint64_t size, time_t mtime) {
+#ifdef HAVE_STATIC_LIBSMBCLIENT
+	if (!checkName(name)) return;
+#endif
 	struct my_dirent item = {type, size, mtime, name};
 	_dir_list.push_back(item);
 }
@@ -210,11 +217,10 @@ bool SmbClient::dirList(const char *dir) {
 		throw std::string(strerror(errno));
 
 	while ((dirent = smbc_getFunctionReaddir(_ctx)(_ctx, fd)) != NULL) {
-		if (!(dirent->smbc_type == SMBC_FILE || dirent->smbc_type == SMBC_DIR))
+		if (!(dirent->smbc_type == SMBC_FILE || dirent->smbc_type == SMBC_DIR)
+				|| !checkName(dirent->name))
 			continue;
-		if (dirent->name[0] == '\0' || 0 == strcmp(dirent->name, ".") ||
-				0 == strcmp(dirent->name, "..") || dirent->namelen >= free)
-			continue;
+
 		struct stat st;
 
 		strncpy(_path + len, dirent->name, free);
