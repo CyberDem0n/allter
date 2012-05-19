@@ -47,9 +47,6 @@ private:
 		std::vector<struct my_dirent>::iterator it;
 
 		for (it = list.begin(); it != list.end(); it++) {
-			if (it->name == "" || it->name == "." || it->name == "..")
-				continue;
-
 			Dirent *item = new Dirent(_db, *it);
 			if (item->isValid())
 				ret.push_back(item);
@@ -187,6 +184,7 @@ int main(int argc, char **argv) {
 	IClient *client;
 	try {
 		client = new SmbClient();
+		client->setTimeout(1000); // 1 Sec
 	} catch (std::string &e) {
 		std::cerr << "Failed to initialize SmbClient: " << e << std::endl;
 		delete db;

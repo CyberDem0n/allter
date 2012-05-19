@@ -48,6 +48,7 @@ public:
 					int passwdlen);
 	void setDebugLevel(int debuglevel);
 	void setWorkGroup(const char *workgroup);
+	virtual void setTimeout(int timeout);
 	virtual void setHost(const char *host);
 	virtual void setShare(const char *share);
 	virtual std::vector<std::string> getShares(void) throw (std::string);

@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <string.h>
 #include <vector>
 
-
 typedef enum {
 	TYPE_COMMON = 1,
 	TYPE_DIRECTORY,
@@ -37,7 +36,14 @@ struct my_dirent {
 	std::string name;
 };
 
+static bool checkFileName(const char *name) {
+	return !(NULL == name || '\0' == *name || 0 == strcmp(name, ".") ||
+			0 == strcmp(name, "."));
+}
+
 class IClient {
+	bool (*nameFilter)(const char *name);
+
 protected:
 	char _username[255];
 	char _password[255];
@@ -55,13 +61,19 @@ protected:
 			throw std::string("Share is empty");
 	}
 
+	bool checkName(const char *name) {
+		return nameFilter(name);
+	}
 public:
 	IClient() {
 		_host[0] = _share[0] = _password[0] = '\0';
 		setUser("GUEST");
+		setNameFilter(checkFileName);
 	}
 
 	virtual ~IClient() {}
+
+	virtual void setTimeout(int timeout) {}
 
 	virtual void setUser(const char *user) {
 		strncpy(_username, user, sizeof(_username)-1);
@@ -85,6 +97,10 @@ public:
 	virtual std::vector<std::string> getShares(void) throw (std::string) = 0;
 
 	virtual std::vector<struct my_dirent> getDirList(const char *dir) throw (std::string) = 0;
+
+	virtual void  setNameFilter(bool (*filter)(const char *)) {
+		nameFilter = filter;
+	}
 };
 
 #endif /* ICLIENT_H_ */
