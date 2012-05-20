@@ -38,7 +38,7 @@ struct my_dirent {
 
 static bool checkFileName(const char *name) {
 	return !(NULL == name || '\0' == *name || 0 == strcmp(name, ".") ||
-			0 == strcmp(name, "."));
+			0 == strcmp(name, ".."));
 }
 
 class IClient {

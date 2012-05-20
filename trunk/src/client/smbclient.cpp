@@ -55,26 +55,27 @@ void SmbClient::auth_fn(const char *server, const char *share, char *wrkgrp,
 	passwd[passwdlen - 1] = 0;
 }
 
-SmbClient *ths = NULL;
-
-void smbc_auth_fn(const char *server, const char *share, char *wrkgrp,
+void smbc_auth_fn(SMBCCTX *ctx, const char *server, const char *share, char *wrkgrp,
 		int wrkgrplen, char *user, int userlen, char *passwd, int passwdlen) {
-	if (ths)
-		ths->auth_fn(server, share, wrkgrp, wrkgrplen, user, userlen, passwd, passwdlen);
+	void *data = smbc_getOptionUserData(ctx);
+	SmbClient *client = (SmbClient *)data;
+	if (NULL != client)
+		client->auth_fn(server, share, wrkgrp, wrkgrplen, user, userlen, passwd, passwdlen);
 }
 
 void SmbClient::createContext(void) throw(std::string){
 	if ((_ctx = smbc_new_context()) == NULL)
 		goto throw_error;
 
-	smbc_setDebug(_ctx, _debuglevel);
-	ths = this; // TODO: Not thread safe :( Put *this into hash, with pid as key
-	smbc_setFunctionAuthData(_ctx, smbc_auth_fn);
-
 	if (smbc_init_context(_ctx) == NULL) {
 		smbc_free_context(_ctx, 1);
 		goto throw_error;
 	}
+
+	smbc_setDebug(_ctx, _debuglevel);
+	smbc_setOptionUserData(_ctx, this);
+	smbc_setFunctionAuthDataWithContext(_ctx, smbc_auth_fn);
+	smbc_setOptionOneSharePerServer(_ctx, true);
 
 	return;
 throw_error:
@@ -221,12 +222,9 @@ bool SmbClient::dirList(const char *dir) {
 				|| !checkName(dirent->name))
 			continue;
 
-		struct stat st;
-
 		strncpy(_path + len, dirent->name, free);
 
-		std::cout << _smb_path << std::endl;
-
+		struct stat st;
 		if (0 != smbc_getFunctionStat(_ctx)(_ctx, _smb_path, &st))
 			continue;
 
