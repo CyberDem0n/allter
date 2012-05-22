@@ -18,20 +18,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #define __INDEXER_H__
 class CIndexer {
 private:
+	const char *base_name;
 	int f;
-	int init;
 	unsigned int dwc;
 	unsigned int dwords_size;
 	unsigned long long *dwords;
-	inline int partition(int, int);
-	void quicksort(int, int);
-	void init_dwords(void);
+	int base_name_len;
+	char *name_tmp;
+	void initBlock(void);
+	void saveBlock(ssize_t size);
+	void flushTemporaryData();
 public:
-	CIndexer(int);
+	CIndexer(const char *, int);
 	~CIndexer();
-	void addString(unsigned char *, unsigned int, unsigned int);
-	void sort(void);
-	void iwrite(char *);
+	void addString(const char *, unsigned int, size_t);
+	void iwrite();
 };
 
 #endif // __INDEXER_H__

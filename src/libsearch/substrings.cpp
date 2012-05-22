@@ -19,41 +19,29 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <stdio.h>
 #include "substrings.h"
 
-unsigned char good_chars[256];
-int good_chars_inited = 0;
+#define IS_GOOD(c) (good_chars[(unsigned char)c] != 0)
+#define IS_BAD(c) (good_chars[(unsigned char)c] == 0)
 
-CSubstrings::CSubstrings(unsigned char *str) {
-	s = str;
-	len = strlen((char *) str);
-	wc = 0;
-	max_len = 0;
-	max_len_id = -1;
+CSubstrings::CSubstrings(const char *str) :
+	_substrings(NULL), length(strlen(str)), string(str),
+			size(_size), max_len(_max_len) {
 	getSubstrings();
 }
 
-CSubstrings::CSubstrings(unsigned char *str, unsigned int length) {
-	s = str;
-	len = length;
-	wc = 0;
-	max_len = 0;
-	max_len_id = -1;
+CSubstrings::CSubstrings(const char *str, size_t length) :
+	_substrings(NULL), length(length), string(str),
+			size(_size), max_len(_max_len) {
 	getSubstrings();
 }
 
 CSubstrings::~CSubstrings() {
-	if (substrings) {
-		for (int i = 0; i < wc; i++)
-			delete[] substrings[i];
-		free(substrings);
+	if (_substrings) {
+		delete [] _substrings_container;
+		delete [] _substrings;
 	}
 }
 
 void CSubstrings::getSubstrings(void) {
-	int i, prev = 0;
-
-	if (s[len - 1] == '/')
-		len--;
-
 	if (!good_chars_inited) {
 		memset(good_chars, 1, sizeof(good_chars));
 		good_chars[(int) ' '] = 0;
@@ -61,51 +49,74 @@ void CSubstrings::getSubstrings(void) {
 		good_chars[(int) '?'] = 0;
 	}
 
-	substrings = (unsigned char **) malloc(((int) ((len + 1) / 2)) * sizeof(unsigned char *));
+	size_t i, prev = 0, pos = 0;
 
-	for (i = 1; i < (int) len; i++)
-		if (good_chars[s[i]] == 0 && good_chars[s[i - 1]]) {
-			substrings[wc] = new unsigned char[i - prev + 1];
-			memcpy(substrings[wc], s + prev, i - prev);
-			substrings[wc++][i - prev] = '\0';
-			if (max_len < i - prev) {
-				max_len = i - prev;
-				max_len_id = wc - 1;
+	_size = _max_len = 0;
+	_max_len_id = -1;
+
+	_substrings = new struct substrings [(length + 1)/2];
+	_substrings_container = new char [length + 1];
+
+	for (i = 1; i < length; i++) {
+		if (IS_GOOD(string[i - 1]) && (IS_BAD(string[i]) || i == length -1)) {
+			size_t size = i - prev;
+			if (i == length - 1 && IS_GOOD(string[i])) size++;
+
+			if (_max_len < size) {
+				_max_len = size;
+				_max_len_id = _size;
 			}
-		} else if (good_chars[s[i]] && good_chars[s[i - 1]] == 0)
+
+			memcpy(_substrings_container + pos, string + prev, size);
+			_substrings_container[pos + size] = '\0';
+
+			_substrings[_size].string = _substrings_container + pos;
+			_substrings[_size++].length = size;
+
+			pos += size + 1;
+		} else if (IS_GOOD(string[i]) && IS_BAD(string[i - 1]))
 			prev = i;
-	if (good_chars[s[len - 1]]) {
-		substrings[wc] = new unsigned char[i - prev + 1];
-		memcpy(substrings[wc], s + prev, i - prev);
-		substrings[wc++][i - prev] = '\0';
-		if (max_len < i - prev) {
-			max_len = i - prev;
-			max_len_id = wc - 1;
-		}
 	}
-	substrings = (unsigned char **) realloc(substrings, wc * sizeof(unsigned char *));
 }
 
-unsigned char *CSubstrings::operator[](int n) {
-	if (n < wc)
-		return substrings[n];
-	return (unsigned char *) NULL;
+const char *CSubstrings::stringAt(int n) {
+	if (n < size)
+		return _substrings[n].string;
+	return NULL;
+}
+
+const size_t CSubstrings::strlenAt(int n) {
+	if (n < size)
+		return _substrings[n].length;
+	return -1;
 }
 
 void CSubstrings::init(void) {
-	char gdch[] = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890êãõëåîçûýúèÿæù÷áðòïìäöüñþóíéôøâà³~!@#$%^&()-+_=.,';`";
-	int ln = strlen(gdch);
-	memset(&good_chars, 0, 256);
-	for (int i = 0; i < ln; i++)
-		good_chars[(unsigned char) gdch[i]] = 1;
+	char gdch[] = "~!@#$%^&()-+_=.,';`";
+	unsigned int i;
+
+	memset(good_chars, 0, sizeof(good_chars));
+
+	for (i = 0; i < sizeof(gdch)-1; i++)
+		good_chars[(unsigned char)gdch[i]] = 1;
+	for (i = (int)'0'; i <= (int)'9'; i++) // Digits
+		good_chars[i] = 1;
+	for (i = (int)'A'; i <= (int)'Z'; i++) // Latin capitals
+		good_chars[i] = 1;
+	for (i = 0xC0; i<= 0xDF; i++) // Russian capitals except Yo
+		good_chars[i] = 1;
+	good_chars[0xA8] = 1; // Russian capital Yo
 	good_chars_inited = 1;
 }
+
+int CSubstrings::good_chars_inited = 0;
+char CSubstrings::good_chars[256] = {0,};
 /*
- int main() {
+int main() {
 	CSubstrings::init();
-	CSubstrings s((unsigned char *) "DK?FJGH KD*FJG DFKH|JGK");
-	printf("%d\n", s.wc);
-	for (int i = 0; i < s.wc; i++)
-		printf("%s\n", s[i]);
+	CSubstrings s("/DK?FJGH KD*FJG DFKH|JGK/");
+	printf("%d\n", s.size);
+	for (int i = 0; i < s.size; i++)
+		printf("%s\n", s.stringAt(i));
 }
 */

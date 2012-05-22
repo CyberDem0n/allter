@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <string.h>
 #include "mydb.h"
 
-#define SAFE_FREE(x) do { if ((x) != NULL) {free(x); x=NULL;} } while(0)
+#define SAFE_FREE(x) do { if ((x) != NULL) {free(x); x=NULL;} } while (0)
 
 /*#define DB_HOST		"localhost"
 #define DB_USER		"root"

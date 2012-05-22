@@ -30,7 +30,7 @@ void usage(char *prname) {
 
 int main(int argc, char **argv) {
 	FILE *f;
-	unsigned char *tmp;
+	char *tmp;
 	char buf[MAX_STR_LEN];
 	unsigned int offset = 0;
 	CIndexer *idx;
@@ -49,18 +49,15 @@ int main(int argc, char **argv) {
 	}
 
 	offset = atol(argv[2]);
-
-	idx = new CIndexer(36000000); /* was 12000000 A5B !!! */
-
 	fseek(f, offset, SEEK_SET);
+
+	idx = new CIndexer(argv[1], 36000000); /* was 12000000 A5B !!! */
 
 	while (fgets(buf, MAX_STR_LEN, f)) {
 //		printf("%s",buf);
-//		buf[strlen(buf)-1] = '\0';
-		tmp = (unsigned char *) strchr(buf, ',') + 3;
-		idx->addString(tmp, offset, strlen((char *) tmp));
+		tmp = strchr(buf, ',') + 3;
+		idx->addString(tmp, offset, strlen(tmp));
 		offset = ftell(f);
-//		if(++i%1000==0) usleep(1);
 	}
 	fclose(f);
 
@@ -68,14 +65,8 @@ int main(int argc, char **argv) {
 
 	printf("Read time: %f\n", te.tv_sec + te.tv_usec / 1000000.0 - tb.tv_sec - tb.tv_usec / 1000000.0);
 
-	idx->sort();
-
 	gettimeofday(&tb, &tz);
-
-	printf("Sort time: %f\n", tb.tv_sec + tb.tv_usec / 1000000.0 - te.tv_sec - te.tv_usec / 1000000.0);
-
-	idx->iwrite(argv[1]);
-
+	idx->iwrite();
 	gettimeofday(&te, &tz);
 
 	printf("Write time: %f\n", te.tv_sec + te.tv_usec / 1000000.0 - tb.tv_sec - tb.tv_usec / 1000000.0);

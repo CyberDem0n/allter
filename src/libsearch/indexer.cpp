@@ -22,34 +22,38 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <byteswap.h>
 
 #include "indexer.h"
 #include "substrings.h"
 #include "searcher.h"
 #include "merge.h"
 
-CIndexer::CIndexer(int size) {
-	dwords_size = size;
+CIndexer::CIndexer(const char *name, int size) : base_name(name), dwords_size(size) {
 	CSubstrings::init();
-	init_dwords();
+	base_name_len = strlen(base_name);
+	name_tmp = new char [base_name_len + 6];
+	strcpy(name_tmp, base_name);
+	strcpy(name_tmp + base_name_len, ".bin");
+	initBlock();
 }
 
 CIndexer::~CIndexer() {
+	delete [] name_tmp;
 	close(f);
 }
 
-void CIndexer::init_dwords(void) {
+void CIndexer::initBlock(void) {
 	dwords = new unsigned long long[dwords_size];
 	if (!dwords) {
-		printf("`new' error!\n");
-		init = 0;
-	} else
-		init = 1;
+		perror("Unable allocate memory...");
+		exit(1);
+	}
 
-	f = open("tmp.bin", O_RDWR);
+	f = open(name_tmp, O_RDWR);
 	if (f == -1) {
 		dwc = 0;
-		f = creat("tmp.bin", S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+		f = creat(name_tmp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	} else {
 		dwc = (int) (lseek(f, 0, SEEK_END) / sizeof(unsigned long long));
 		int num_blocks = (int) ((dwc - 1) / dwords_size);
@@ -65,136 +69,104 @@ void CIndexer::init_dwords(void) {
 	}
 }
 
-void CIndexer::addString(unsigned char *str, unsigned int offset, unsigned int length) {
-	int len;
-	CSubstrings s(str, length);
-	for (int i = 0; i < s.wc; i++) {
-		len = strlen((const char *) s[i]) - 3;
+void CIndexer::addString(const char *string, unsigned int offset, size_t length) {
+	CSubstrings sub(string, length);
+
+	for (int i = 0; i < sub.size; i++) {
+		const unsigned char *str = (const unsigned char *)sub.stringAt(i);
+		int len = sub.strlenAt(i) - 3;
+
 		for (int j = 0; j <= len; j++) {
-			dwords[dwc % dwords_size] = (((unsigned long long) s[i][j]) << 56) | (((unsigned long long) s[i][j + 1]) << 48)	| (((unsigned long long) s[i][j + 2]) << 40) | ((unsigned long long) offset);
-			if (j < len)
-				dwords[dwc % dwords_size] |= (((unsigned long long) s[i][j + 3]) << 32);
-			dwc++;
-			if (dwc % dwords_size == 0) {
-				quicksort(0, dwords_size - 1);
-				if (write(f, dwords, sizeof(unsigned long long) * dwords_size) == (ssize_t) sizeof(unsigned long long) * dwords_size);
-			}
+			dwords[dwc % dwords_size] = ((unsigned long long)bswap_32(*((unsigned int *)(str+j))) << 32) | ((unsigned long long) offset);
+
+			if ((++dwc) % dwords_size == 0)
+				saveBlock(dwords_size);
 		}
 	}
 }
 
-void CIndexer::sort(void) {
-	ssize_t size = dwc % dwords_size;
-	quicksort(0, size - 1);
+static int compare(const void *elem1, const void *elem2) {
+	unsigned long long *p1 = (unsigned long long *)elem1;
+	unsigned long long *p2 = (unsigned long long *)elem2;
+	if (*p1 == *p2) return 0;
+	if (*p1 < *p2) return -1;
+	return 1;
+}
+
+void CIndexer::saveBlock(ssize_t size) {
+	qsort(dwords, size, sizeof(unsigned long long), compare);
+
 	size *= sizeof(unsigned long long);
-	if (write(f, dwords, size) == size);
+
+	if (write(f, dwords, size) != size) {
+		perror("Unable write temporary data...");
+		exit(1);
+	}
+}
+
+void CIndexer::flushTemporaryData() {
+	saveBlock(dwc % dwords_size);
+
 	delete[] dwords;
 	close(f);
-	f = open("tmp.bin", O_RDONLY);
+	f = open(name_tmp, O_RDONLY);
 }
 
-inline int CIndexer::partition(int p, int r) {
-	unsigned long long x, i, j, tmp;
-
-	x = dwords[(int) ((p + r) / 2)];
-	i = p - 1;
-	j = r + 1;
-
-	while (1) {
-		do {
-			--j;
-		} while (dwords[j] > x);
-
-		do {
-			++i;
-		} while (dwords[i] < x);
-
-		if (i < j) {
-			tmp = dwords[i];
-			dwords[i] = dwords[j];
-			dwords[j] = tmp;
-		} else
-			return j;
-	}
-}
-
-void CIndexer::quicksort(int p, int r) {
-	int q;
-
-	if (p < r) {
-		q = partition(p, r);
-		quicksort(p, q);
-		quicksort(q + 1, r);
-	}
-}
-
-void CIndexer::iwrite(char *fname_base) {
+void CIndexer::iwrite() {
 	FILE *id2, *id4, *idx;
 	unsigned int temp, prev1, prev4, prev4_offset, prev_offset, idx_count, id4_count;
 	size_t buf_size = 32768;
 	unsigned long long dwrds, prev = 0;
-	int len = strlen(fname_base);
-	char *id2_name = new char[len + 6];
-	char *id4_name = new char[len + 6];
-	char *idx_name = new char[len + 6];
 
 	struct index4 *buffer4 = new struct index4[buf_size];
 	unsigned int *bufferx = new unsigned int[buf_size];
 
-	strcpy(id2_name, fname_base);
-	strcat(id2_name, ".id2t");
-	strcpy(id4_name, fname_base);
-	strcat(id4_name, ".id4t");
-	strcpy(idx_name, fname_base);
-	strcat(idx_name, ".idxt");
+	flushTemporaryData();
 
-	id2 = fopen(id2_name, "wb");
-	id4 = fopen(id4_name, "wb");
-	idx = fopen(idx_name, "wb");
-
-	delete[] id2_name;
-	delete[] id4_name;
-	delete[] idx_name;
-
-	prev1 = prev4 = prev4_offset = prev_offset = idx_count = id4_count = 0;
+	strcpy(name_tmp + base_name_len, ".id2t"); id2 = fopen(name_tmp, "wb");
+	strcpy(name_tmp + base_name_len, ".id4t"); id4 = fopen(name_tmp, "wb");
+	strcpy(name_tmp + base_name_len, ".idxt"); idx = fopen(name_tmp, "wb");
 
 	CMerge *c = new CMerge(f, dwords_size, dwords_size*sizeof(unsigned long long));
 
+	prev1 = prev4 = prev4_offset = prev_offset = idx_count = id4_count = 0;
+
 	for (unsigned int i = 0; i < dwc; i++) {
 		dwrds = c->get_element();
-		if (prev != dwrds) {
-			prev = dwrds;
-			bufferx[idx_count % buf_size] = (unsigned int) prev;
-			temp = (unsigned int) (prev >> 32);
-			if (prev4 != temp) {
-				if (prev4 != 0) {
-					buffer4[(id4_count - 1) % buf_size].size = idx_count - prev_offset;
-					if (id4_count % buf_size == 0)
-						if (fwrite(buffer4, sizeof(struct index4), buf_size, id4) == buf_size);
-				}
-				prev4 = temp;
-				buffer4[id4_count % buf_size].chr = (unsigned short) prev4;
-				buffer4[id4_count % buf_size].offset = idx_count << 2;
-				prev_offset = idx_count;
+		if (prev == dwrds)
+			continue;
 
-				temp = (unsigned int) (prev >> 48);
-				if (prev1 != temp) {
-					if (prev1 != 0) {
-						prev4_offset = id4_count - prev4_offset;
-						if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2)	== 1);
-					}
-					prev1 = temp;
-					prev4_offset = id4_count * sizeof(struct index4);
-					fseek(id2, temp * 2 * sizeof(unsigned int), SEEK_SET);
-					if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2)	== 1);
-					prev4_offset = id4_count;
-				}
-				id4_count++;
+		prev = dwrds;
+		bufferx[idx_count % buf_size] = (unsigned int) prev;
+		temp = (unsigned int) (prev >> 32);
+		if (prev4 != temp) {
+			if (prev4 != 0) {
+				buffer4[(id4_count - 1) % buf_size].size = idx_count - prev_offset;
+				if (id4_count % buf_size == 0)
+					if (fwrite(buffer4, sizeof(struct index4), buf_size, id4) == buf_size);
 			}
-			idx_count++;
-			if (idx_count % buf_size == 0)
-				if (fwrite(bufferx, sizeof(unsigned int), buf_size, idx)== buf_size);
+			prev4 = temp;
+			buffer4[id4_count % buf_size].chr = (unsigned short) prev4;
+			buffer4[id4_count % buf_size].offset = idx_count << 2;
+			prev_offset = idx_count;
+
+			temp = (unsigned int) (prev >> 48);
+			if (prev1 != temp) {
+				if (prev1 != 0) {
+					prev4_offset = id4_count - prev4_offset;
+					if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2)	== 1);
+				}
+				prev1 = temp;
+				prev4_offset = id4_count * sizeof(struct index4);
+				fseek(id2, temp * 2 * sizeof(unsigned int), SEEK_SET);
+				if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2)	== 1);
+				prev4_offset = id4_count;
+			}
+			id4_count++;
 		}
+
+		if ((++idx_count) % buf_size == 0)
+			if (fwrite(bufferx, sizeof(unsigned int), buf_size, idx)== buf_size);
 	}
 
 	if (fwrite(bufferx, sizeof(unsigned int), idx_count % buf_size, idx) == idx_count % buf_size);

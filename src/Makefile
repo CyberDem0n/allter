@@ -10,7 +10,7 @@ programs	:= crawler indexer searcher fsearch.cgi
 
 
 compile_flags	:= -Wall -ggdb -MD -pipe `mysql_config --cflags`
-link_flags	:= -s -pipe
+link_flags	:= -ggdb -pipe
 mysql_ldflags	:= `mysql_config --libs`
 
 libsmbclient = $(shell ls /usr/lib*/libsmbclient.a 2> /dev/null | head -n 1)
@@ -25,6 +25,7 @@ libsearch_dir	:= libsearch
 crawler_subdirs	:= client structs libs
 crawler_objs	:= crawler.cpp $(wildcard $(addsuffix /*.c*, $(crawler_subdirs) $(db_dir)))
 crawler_objs	:= $(crawler_objs:.cpp=.o)
+crawler_objs	:= $(crawler_objs:.c=.o)
 
 indexer_objs	:= indexer.cpp $(wildcard $(addsuffix /*.cpp, $(libsearch_dir)))
 indexer_objs	:= $(indexer_objs:.cpp=.o)
@@ -52,6 +53,9 @@ fsearch.cgi: $(fsearch_objs)
 	g++ -o $@ $(fsearch_objs) $(link_flags) $(mysql_ldflags)
 
 %.o: %.cpp
+	g++ -o $@ -c $< $(compile_flags)
+
+%.o: %.c
 	g++ -o $@ -c $< $(compile_flags)
 
 web/counter.o:
