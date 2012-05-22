@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #define __MERGE_H__
 
 struct block {
-	char *tmp_buf;
+	void *tmp_buf;
 	unsigned long long *buffer;
 	int block_size; //Size of sorted data block. For last block it can be less then for previous blocks
 	int buffer_count; //Position it data block
@@ -31,7 +31,7 @@ struct block {
 
 class CMerge {
 private:
-	int f;
+	int fd;
 	unsigned int num_elements;
 	unsigned int elemen_count;
 	int num_blocks;

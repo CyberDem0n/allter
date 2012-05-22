@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 typedef void TALLOC_CTX;
-#define TALLOC_FREE(ctx) do { talloc_free(ctx); ctx=NULL; } while(0)
+#define TALLOC_FREE(ctx) do { talloc_free(ctx); ctx=NULL; } while (0)
 #define talloc_free(ctx) _talloc_free(ctx, __location__)
 #ifndef __location__
 #define __TALLOC_STRING_LINE1__(s)    #s

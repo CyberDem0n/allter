@@ -58,11 +58,12 @@ MYSQL mysql;
 char *index_get_file_ids(void)
 {
 		char *tmp,*ret = (char *)NULL;
-		CSearcher s(INDEX_PATH "fls.txt",q,'0'+(char)type);
-		tmp = s.results();
+		CSearcher s(INDEX_PATH "fls.txt");
+		tmp = s.doQuery('0'+(char)type, q);
 		if(!tmp) return (char *)NULL;
 		ret = new char[strlen(tmp)+1];
 		strcpy(ret,tmp);
+		if (*tmp) delete [] tmp;
 		return ret;
 }
 
@@ -91,10 +92,10 @@ void sql_get_search_results(const char *uids)
 						end += mysql_real_escape_string(&mysql, end, query, strlen(query));
 						end = strmov(end, "' AND ");
 				} else {
-						CSubstrings s((unsigned char *)q);
-						for(int i=0;i<s.wc;i++) {
+						CSubstrings s(q);
+						for(int i=0;i<s.size;i++) {
 								end = strmov(end, "files.name LIKE '%");
-								end += mysql_real_escape_string(&mysql, end, (char *)s[i], strlen((char *)s[i]));
+								end += mysql_real_escape_string(&mysql, end, s.stringAt(i), s.strlenAt(i));
 								end = strmov(end, "%' AND ");
 						}
 				}
@@ -232,11 +233,11 @@ int check_query_type()
 		if(gc1<3 || (gc1<3 && q[0] == '/')) return 1;
 		if(q[0] == '/') return 2;
 		int found = 0;
-		CSubstrings s((unsigned char *)q);
-		for(i=0;i<s.wc;i++)
-				if(strlen((char *)s[i]) > 1) {found = 1; break; }
+		CSubstrings s(q);
+		for(i=0;i<s.size;i++)
+				if(s.strlenAt(i) > 1) {found = 1; break; }
 		if(!found) return 1;
-		if(s.wc==1 && strlen((char *)s[0]) == 2) return 1;
+		if(s.size==1 && s.strlenAt(0) == 2) return 1;
 
 //		if(type>1 || max_size || min_size || bitrate || added) return 8;
 		if(max_size>-1 || min_size>-1 || bitrate>-1 || added>0) return 8; // Because my searcher works more quickly then MySQL

@@ -136,9 +136,9 @@ void SmbClient::dirListFn(const char *name, DIRENT_TYPE type, uint64_t size, tim
 
 #ifdef HAVE_STATIC_LIBSMBCLIENT
 static NTSTATUS dir_list_fn(const char *mnt, struct file_info *finfo, const char *mask, void *state) {
-	SmbClient *ths = (SmbClient *)state;
+	SmbClient *client = (SmbClient *)state;
 	DIRENT_TYPE type = (finfo->mode&FILE_ATTRIBUTE_DIRECTORY)?TYPE_DIRECTORY:TYPE_COMMON;
-	ths->dirListFn(finfo->name, type, finfo->size, finfo->mtime_ts.tv_sec);
+	client->dirListFn(finfo->name, type, finfo->size, finfo->mtime_ts.tv_sec);
 	return NT_STATUS_OK;
 }
 

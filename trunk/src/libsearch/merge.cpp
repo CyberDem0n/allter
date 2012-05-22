@@ -25,9 +25,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include "merge.h"
 
 CMerge::CMerge(int fil, int blk_size, int mem_size) {
-	f = fil;
+	fd = fil;
 	block_size = blk_size;
-	num_elements = (int) (lseek(f, 0, SEEK_END) / sizeof(unsigned long long));
+	num_elements = (int) (lseek(fd, 0, SEEK_END) / sizeof(unsigned long long));
 	elemen_count = 0;
 	num_blocks = (int) ((num_elements - 1) / block_size) + 1;
 	blocks = new struct block[num_blocks];
@@ -49,46 +49,50 @@ CMerge::~CMerge() {
 }
 
 void CMerge::init_block(int block_num, int block_size) {
-	blocks[block_num].tmp_buf = NULL;
-	blocks[block_num].inited = 0;
-	blocks[block_num].block_size = block_size;
-	blocks[block_num].buffer_size = buffer_size;
-	blocks[block_num].buffer_count = 0;
-	blocks[block_num].is_over = 0;
+	struct block *block = blocks + block_num;
+	block->tmp_buf = NULL;
+	block->inited = 0;
+	block->block_size = block_size;
+	block->buffer_size = buffer_size;
+	block->buffer_count = 0;
+	block->is_over = 0;
 	read_block(block_num);
 }
 
 void CMerge::read_block(int block_num) {
+	struct block *block = blocks + block_num;
 //	printf("%d %d %d %d\n", block_num,block_size ,blocks[block_num].buffer_count,buffer_size);
-	if (blocks[block_num].inited)
-		munmap(blocks[block_num].tmp_buf, blocks[block_num].mmaped_len);
+	if (block->inited)
+		munmap(block->tmp_buf, block->mmaped_len);
 
-	int offset = (block_num * block_size + blocks[block_num].buffer_count * buffer_size) * sizeof(unsigned long long);
+	int offset = (block_num * block_size + block->buffer_count * buffer_size) * sizeof(unsigned long long);
 	int map_align = offset % getpagesize();
 
-	if (blocks[block_num].block_size - blocks[block_num].buffer_count * buffer_size < buffer_size) {
-		blocks[block_num].buffer_size = blocks[block_num].block_size - blocks[block_num].buffer_count * buffer_size;
-		blocks[block_num].is_over = 1;
+	if (block->block_size - block->buffer_count * buffer_size < buffer_size) {
+		block->buffer_size = block->block_size - block->buffer_count * buffer_size;
+		block->is_over = 1;
 	}
 
-	blocks[block_num].mmaped_len = sizeof(unsigned long long) * blocks[block_num].buffer_size + map_align;
+	block->mmaped_len = sizeof(unsigned long long) * block->buffer_size + map_align;
 
-	blocks[block_num].tmp_buf = (char *) mmap(blocks[block_num].tmp_buf, blocks[block_num].mmaped_len, PROT_READ, MAP_SHARED, f, offset	- map_align);
-	blocks[block_num].buffer = (unsigned long long *) (blocks[block_num].tmp_buf + map_align);
-	blocks[block_num].inited = 1;
-	blocks[block_num].buffer_count++;
-	blocks[block_num].buffer_cursor = 0;
+	block->tmp_buf = mmap(NULL, block->mmaped_len, PROT_READ, MAP_SHARED, fd, offset - map_align);
+	block->buffer = (unsigned long long *) ((char *)block->tmp_buf + map_align);
+	block->inited = 1;
+	block->buffer_count++;
+	block->buffer_cursor = 0;
 }
 
 unsigned long long CMerge::get_element(int block_num) {
-	if (blocks[block_num].is_over && blocks[block_num].buffer_cursor >= blocks[block_num].buffer_size)
+	struct block *block = blocks + block_num;
+	if (block->is_over && block->buffer_cursor >= block->buffer_size)
 		return 0xFFFFFFFFFFFFFFFFLL;
-	return blocks[block_num].buffer[blocks[block_num].buffer_cursor];
+	return block->buffer[blocks->buffer_cursor];
 }
 
 unsigned long long CMerge::pop_element(int block_num) {
-	unsigned long long ret = blocks[block_num].buffer[blocks[block_num].buffer_cursor];
-	if (++blocks[block_num].buffer_cursor >= blocks[block_num].buffer_size && blocks[block_num].is_over != 1)
+	struct block *block = blocks + block_num;
+	unsigned long long ret = block->buffer[block->buffer_cursor];
+	if (++block->buffer_cursor >= block->buffer_size && block->is_over != 1)
 		read_block(block_num);
 	return ret;
 }
@@ -111,18 +115,18 @@ unsigned long long CMerge::get_element(void) {
  {
  FILE *f = fopen("test.bin","wb");
  unsigned long long *tmp = new unsigned long long[10];
- for(int j=0;j<3;j++) {
- for(int i=0;i<10;i++)
+ for (int j=0; j<3; j++) {
+ for (int i=0; i<10; i++)
  tmp[i] = i;
  fwrite(tmp, sizeof(unsigned long long), 10, f);
  }
- for(int i=0;i<7;i++)
+ for (int i=0; i<7; i++)
  tmp[i] = i;
  fwrite(tmp, sizeof(unsigned long long), 7, f);
 
  f = freopen("test.bin", "rb", f);
  CMerge c(f, 10, 129);
- for(int i=0;i<45;i++)
+ for (int i=0; i<45; i++)
  printf("%d\n",(int)c.get_element());
  fclose(f);
  }*/

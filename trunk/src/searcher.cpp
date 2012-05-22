@@ -37,12 +37,14 @@ int main(int argc, char **argv) {
 	setlocale(LC_CTYPE, "ru_RU.KOI8-R");
 	fflush(stdout);
 	gettimeofday(&tb, &tz);
-	CSearcher s("fls.txt", argv[1], type);
+	CSearcher s("fls.txt");
 
-	char *res = s.results();
-	if (res)
+	char *res = s.doQuery(type, argv[1]);
+	if (res) {
 		printf("%s\n", res);
-	else
+		if (*res)
+			delete [] res;
+	} else
 		printf("No results\n");
 	gettimeofday(&te, &tz);
 

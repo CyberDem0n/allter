@@ -19,6 +19,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 
 #include "substrings.h"
 
+struct index2 {
+	unsigned int id4_offset;
+	unsigned int id4_size;
+}__attribute__((packed));
+
 struct index4 {
 	unsigned short chr;
 	unsigned int offset;
@@ -27,27 +32,33 @@ struct index4 {
 
 class CSearcher {
 private:
-	struct index4 *id4;
-	unsigned int id4_len;
+	struct index2 *_id2;
+	unsigned int _id2_size;
+	struct index4 *_id4;
+	unsigned int _id4_size;
+
 	const char *base_name;
 	char *id2_name, *id4_name, *idx_name;
-	unsigned char *query;
-	int query_type, query_len;
-	int done, max_results; // Maximum number of returned id's
-	char ret[10000];
-	unsigned char type;
 
-	inline int mstrstr(unsigned char *);
-	inline int wstrstr(unsigned char *);
-	inline int bstrstr(unsigned char *);
-	int check_query(unsigned char *);
-	int find_chain4(unsigned char *, unsigned int *, unsigned int *);
-	int find_chain3(unsigned char *, unsigned int *, unsigned int *);
-	CSubstrings *s;
+	const int max_results; // Maximum number of returned id's
+
+	void *mapFile(const char *, off_t, size_t &, size_t &);
+	bool mapIndexes(void);
+	void unmapIndexes(void);
+	bool remapIndexes(void);
+
+	int check_query(const char *);
+
+	bool mstrstr(const char *, CSubstrings &);
+	bool wstrstr(const char *, CSubstrings &);
+	bool bstrstr(const char *, CSubstrings &);
+
+	bool find_chain4(const unsigned char *, unsigned int, unsigned int, unsigned int &, unsigned int &);
+	bool find_chain3(const unsigned char *, unsigned int, unsigned int, unsigned int &, unsigned int &);
 public:
-	CSearcher(const char *, char *, char);
+	CSearcher(const char *);
 	~CSearcher();
-	char *results(void);
+	char *doQuery(const char, const char *);
 };
 
 #endif // __SEARCHER_H__
