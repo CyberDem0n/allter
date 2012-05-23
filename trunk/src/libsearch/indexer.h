@@ -16,13 +16,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 #ifndef __INDEXER_H__
 #define __INDEXER_H__
+
+#include <stdint.h>
+
 class CIndexer {
 private:
 	const char *base_name;
 	int f;
 	unsigned int dwc;
 	unsigned int dwords_size;
-	unsigned long long *dwords;
+	uint64_t *dwords;
 	int base_name_len;
 	char *name_tmp;
 	void initBlock(void);

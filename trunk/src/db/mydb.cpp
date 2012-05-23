@@ -17,6 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
+
 #include "mydb.h"
 
 #define SAFE_FREE(x) do { if ((x) != NULL) {free(x); x=NULL;} } while (0)
@@ -61,7 +63,7 @@ bool MyDB::query(const char *formatstr, ...) {
 	return query(formatstr, ap);
 }
 
-unsigned long long MyDB::insert(const char *formatstr, ...) {
+uint64_t MyDB::insert(const char *formatstr, ...) {
 	va_list ap;
 	va_start(ap, formatstr);
 	if (query(formatstr, ap))

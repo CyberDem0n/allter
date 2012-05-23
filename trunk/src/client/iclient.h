@@ -73,7 +73,7 @@ public:
 
 	virtual ~IClient() {}
 
-	virtual void setTimeout(int timeout) {}
+	virtual void setTimeout(int timeout) = 0;
 
 	virtual void setUser(const char *user) {
 		strncpy(_username, user, sizeof(_username)-1);

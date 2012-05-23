@@ -43,9 +43,9 @@ private:
 
 	bool loadFromDB();
 	bool insertIntoDB();
-	void clearList(bool doDelete = true);
+	void clearList();
 	void createList();
-	void clearDirs(bool doDelete = true);
+	void clearDirs();
 	void createDirsList();
 	void createLists();
 

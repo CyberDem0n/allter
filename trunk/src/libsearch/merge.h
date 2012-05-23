@@ -17,9 +17,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #ifndef __MERGE_H__
 #define __MERGE_H__
 
+#include <stdint.h>
+
 struct block {
 	void *tmp_buf;
-	unsigned long long *buffer;
+	uint64_t *buffer;
 	int block_size; //Size of sorted data block. For last block it can be less then for previous blocks
 	int buffer_count; //Position it data block
 	int buffer_cursor;
@@ -40,12 +42,12 @@ private:
 	struct block *blocks;
 	void init_block(int, int);
 	void read_block(int);
-	unsigned long long get_element(int);
-	unsigned long long pop_element(int);
+	uint64_t get_element(int);
+	uint64_t pop_element(int);
 public:
 	CMerge(int, int, int);
 	~CMerge();
-	unsigned long long get_element(void);
+	uint64_t get_element(void);
 };
 
 #endif // __MERGE_H__

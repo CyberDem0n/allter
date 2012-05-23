@@ -17,6 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #ifndef __LIBCGI_H__
 #define __LIBCGI_H__
 
+#include <stdint.h>
+
 class CGI {
 private:
 	char *query_string;
@@ -30,7 +32,7 @@ public:
 	char *getQueryString(void);
 	char *param(const char *);
 	int int_param(const char *);
-	long long long_param(const char *);
+	int64_t long_param(const char *);
 };
 
 #endif // __LIBCGI_H__

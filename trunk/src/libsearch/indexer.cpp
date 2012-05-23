@@ -23,6 +23,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <fcntl.h>
 #include <errno.h>
 #include <byteswap.h>
+#include <assert.h>
 
 #include "indexer.h"
 #include "substrings.h"
@@ -44,7 +45,7 @@ CIndexer::~CIndexer() {
 }
 
 void CIndexer::initBlock(void) {
-	dwords = new unsigned long long[dwords_size];
+	dwords = new uint64_t[dwords_size];
 	if (!dwords) {
 		perror("Unable allocate memory...");
 		exit(1);
@@ -55,13 +56,16 @@ void CIndexer::initBlock(void) {
 		dwc = 0;
 		f = creat(name_tmp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	} else {
-		dwc = (int) (lseek(f, 0, SEEK_END) / sizeof(unsigned long long));
+		dwc = (int) (lseek(f, 0, SEEK_END) / sizeof(uint64_t));
 		int num_blocks = (int) ((dwc - 1) / dwords_size);
 		unsigned int block_size = dwc - dwords_size * num_blocks;
 		if (block_size < dwords_size) {
-			lseek(f, num_blocks * dwords_size * sizeof(unsigned long long), SEEK_SET);
-			if (read(f, dwords, sizeof(unsigned long long) * block_size) == (ssize_t) sizeof(unsigned long long) * block_size);
-			lseek(f, num_blocks * dwords_size * sizeof(unsigned long long), SEEK_SET);
+			lseek(f, num_blocks * dwords_size * sizeof(uint64_t), SEEK_SET);
+			if (read(f, dwords, sizeof(uint64_t) * block_size) != (ssize_t) sizeof(uint64_t) * block_size) {
+				perror("Unable init last block...");
+				exit(1);
+			}
+			lseek(f, num_blocks * dwords_size * sizeof(uint64_t), SEEK_SET);
 		} else {
 			dwc = 0;
 			lseek(f, 0, SEEK_END);
@@ -77,7 +81,7 @@ void CIndexer::addString(const char *string, unsigned int offset, size_t length)
 		int len = sub.strlenAt(i) - 3;
 
 		for (int j = 0; j <= len; j++) {
-			dwords[dwc % dwords_size] = ((unsigned long long)bswap_32(*((unsigned int *)(str+j))) << 32) | ((unsigned long long) offset);
+			dwords[dwc % dwords_size] = ((uint64_t)bswap_32(*((unsigned int *)(str+j))) << 32) | ((uint64_t) offset);
 
 			if ((++dwc) % dwords_size == 0)
 				saveBlock(dwords_size);
@@ -86,17 +90,17 @@ void CIndexer::addString(const char *string, unsigned int offset, size_t length)
 }
 
 static int compare(const void *elem1, const void *elem2) {
-	unsigned long long *p1 = (unsigned long long *)elem1;
-	unsigned long long *p2 = (unsigned long long *)elem2;
+	uint64_t *p1 = (uint64_t *)elem1;
+	uint64_t *p2 = (uint64_t *)elem2;
 	if (*p1 == *p2) return 0;
 	if (*p1 < *p2) return -1;
 	return 1;
 }
 
 void CIndexer::saveBlock(ssize_t size) {
-	qsort(dwords, size, sizeof(unsigned long long), compare);
+	qsort(dwords, size, sizeof(uint64_t), compare);
 
-	size *= sizeof(unsigned long long);
+	size *= sizeof(uint64_t);
 
 	if (write(f, dwords, size) != size) {
 		perror("Unable write temporary data...");
@@ -116,7 +120,7 @@ void CIndexer::iwrite() {
 	FILE *id2, *id4, *idx;
 	unsigned int temp, prev1, prev4, prev4_offset, prev_offset, idx_count, id4_count;
 	size_t buf_size = 32768;
-	unsigned long long dwrds, prev = 0;
+	uint64_t dwrds, prev = 0;
 
 	struct index4 *buffer4 = new struct index4[buf_size];
 	unsigned int *bufferx = new unsigned int[buf_size];
@@ -127,7 +131,7 @@ void CIndexer::iwrite() {
 	strcpy(name_tmp + base_name_len, ".id4t"); id4 = fopen(name_tmp, "wb");
 	strcpy(name_tmp + base_name_len, ".idxt"); idx = fopen(name_tmp, "wb");
 
-	CMerge *c = new CMerge(f, dwords_size, dwords_size*sizeof(unsigned long long));
+	CMerge *c = new CMerge(f, dwords_size, dwords_size*sizeof(uint64_t));
 
 	prev1 = prev4 = prev4_offset = prev_offset = idx_count = id4_count = 0;
 
@@ -143,7 +147,7 @@ void CIndexer::iwrite() {
 			if (prev4 != 0) {
 				buffer4[(id4_count - 1) % buf_size].size = idx_count - prev_offset;
 				if (id4_count % buf_size == 0)
-					if (fwrite(buffer4, sizeof(struct index4), buf_size, id4) == buf_size);
+					assert(fwrite(buffer4, sizeof(struct index4), buf_size, id4) == buf_size);
 			}
 			prev4 = temp;
 			buffer4[id4_count % buf_size].chr = (unsigned short) prev4;
@@ -154,28 +158,28 @@ void CIndexer::iwrite() {
 			if (prev1 != temp) {
 				if (prev1 != 0) {
 					prev4_offset = id4_count - prev4_offset;
-					if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2)	== 1);
+					assert(fwrite(&prev4_offset, sizeof(unsigned int), 1, id2) == 1);
 				}
 				prev1 = temp;
 				prev4_offset = id4_count * sizeof(struct index4);
 				fseek(id2, temp * 2 * sizeof(unsigned int), SEEK_SET);
-				if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2)	== 1);
+				assert(fwrite(&prev4_offset, sizeof(unsigned int), 1, id2) == 1);
 				prev4_offset = id4_count;
 			}
 			id4_count++;
 		}
 
 		if ((++idx_count) % buf_size == 0)
-			if (fwrite(bufferx, sizeof(unsigned int), buf_size, idx)== buf_size);
+			if (fwrite(bufferx, sizeof(unsigned int), buf_size, idx) != buf_size) {}
 	}
 
-	if (fwrite(bufferx, sizeof(unsigned int), idx_count % buf_size, idx) == idx_count % buf_size);
+	assert(fwrite(bufferx, sizeof(unsigned int), idx_count % buf_size, idx) == idx_count % buf_size);
 
 	buffer4[(id4_count - 1) % buf_size].size = idx_count - prev_offset;
-	if (fwrite(buffer4, sizeof(struct index4), id4_count % buf_size, id4) == id4_count % buf_size);
+	assert(fwrite(buffer4, sizeof(struct index4), id4_count % buf_size, id4) == id4_count % buf_size);
 
 	prev4_offset = id4_count - prev4_offset;
-	if (fwrite(&prev4_offset, sizeof(unsigned int), 1, id2) == 1);
+	assert(fwrite(&prev4_offset, sizeof(unsigned int), 1, id2) == 1);
 
 	delete c;
 

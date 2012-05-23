@@ -42,7 +42,6 @@ public:
 	virtual ~Dirent();
 	bool isValid() { return (_upper_name != NULL); }
 	const char *upname() const;
-//	std::string &name() { return _name; }
 	unsigned int uid() { return _uid; }
 	void uid(unsigned int uid) { _uid = uid; }
 	void path(unsigned int path) { _path = path; }

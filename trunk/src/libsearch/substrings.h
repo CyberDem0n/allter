@@ -38,7 +38,7 @@ public:
 	~CSubstrings();
 	static void init(void);
 	const char *stringAt(int);
-	const size_t strlenAt(int);
+	size_t strlenAt(int);
 	const int &size;
 	const size_t &max_len;
 };

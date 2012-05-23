@@ -146,10 +146,11 @@ void Dirent::updateInDB(unsigned int uid) {
 }
 
 void Dirent::updateInDB(unsigned int uid, time_t updated) {
-	_db.query("UPDATE paths2files SET mtime=%u, updated=%u, size=%llu WHERE uid=%u", _mtime, updated, _size, uid);
+	_db.query("UPDATE paths2files SET mtime=%u, updated=%u, size=%llu WHERE uid=%u", _mtime, updated, _size, (_uid = uid));
 }
 
 void Dirent::forbidScan() {
+	_add_info = 1;
 	_db.query("UPDATE paths2files SET add_info=1, size=0 WHERE uid=%u", _uid);
 }
 
