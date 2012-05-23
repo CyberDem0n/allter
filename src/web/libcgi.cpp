@@ -90,8 +90,8 @@ int CGI::int_param(const char *name) {
 	return ret;
 }
 
-long long CGI::long_param(const char *name) {
-	long long ret = -1;
+int64_t CGI::long_param(const char *name) {
+	int64_t ret = -1;
 	char *tmp = param(name);
 	if (tmp) {
 		ret = atol(tmp);

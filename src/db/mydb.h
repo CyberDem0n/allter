@@ -20,7 +20,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <stdint.h>
 #include <stdarg.h>
 #include <mysql.h>
-#include <string>
 
 class MyDB {
 private:
@@ -31,7 +30,7 @@ private:
 public:
 	char *escape(const char *string);
 	bool query(const char *formatstr, ...);
-	unsigned long long insert(const char *formatstr, ...);
+	uint64_t insert(const char *formatstr, ...);
 	MYSQL_RES *results(void) { return mysql_store_result(&_mysql); }
 	MyDB() { connect(); }
 	virtual ~MyDB() { mysql_close(&_mysql); }

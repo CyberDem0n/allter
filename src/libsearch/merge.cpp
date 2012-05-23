@@ -24,14 +24,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 
 #include "merge.h"
 
+const unsigned int maxint = 0xFFFFFFFFL;
+const uint64_t maxlong = (((uint64_t)maxint) << 32) | ((uint64_t)maxint);
+
 CMerge::CMerge(int fil, int blk_size, int mem_size) {
 	fd = fil;
 	block_size = blk_size;
-	num_elements = (int) (lseek(fd, 0, SEEK_END) / sizeof(unsigned long long));
+	num_elements = (int) (lseek(fd, 0, SEEK_END) / sizeof(uint64_t));
 	elemen_count = 0;
 	num_blocks = (int) ((num_elements - 1) / block_size) + 1;
 	blocks = new struct block[num_blocks];
-	buffer_size = (int) (mem_size / sizeof(unsigned long long) / num_blocks); // Buffer size (in elements)
+	buffer_size = (int) (mem_size / sizeof(uint64_t) / num_blocks); // Buffer size (in elements)
 	if (buffer_size == 0)
 		buffer_size = 1;
 	for (int i = 0; i < num_blocks - 1; i++)
@@ -65,7 +68,7 @@ void CMerge::read_block(int block_num) {
 	if (block->inited)
 		munmap(block->tmp_buf, block->mmaped_len);
 
-	int offset = (block_num * block_size + block->buffer_count * buffer_size) * sizeof(unsigned long long);
+	int offset = (block_num * block_size + block->buffer_count * buffer_size) * sizeof(uint64_t);
 	int map_align = offset % getpagesize();
 
 	if (block->block_size - block->buffer_count * buffer_size < buffer_size) {
@@ -73,34 +76,34 @@ void CMerge::read_block(int block_num) {
 		block->is_over = 1;
 	}
 
-	block->mmaped_len = sizeof(unsigned long long) * block->buffer_size + map_align;
+	block->mmaped_len = sizeof(uint64_t) * block->buffer_size + map_align;
 
 	block->tmp_buf = mmap(NULL, block->mmaped_len, PROT_READ, MAP_SHARED, fd, offset - map_align);
-	block->buffer = (unsigned long long *) ((char *)block->tmp_buf + map_align);
+	block->buffer = (uint64_t *) ((char *)block->tmp_buf + map_align);
 	block->inited = 1;
 	block->buffer_count++;
 	block->buffer_cursor = 0;
 }
 
-unsigned long long CMerge::get_element(int block_num) {
+uint64_t CMerge::get_element(int block_num) {
 	struct block *block = blocks + block_num;
 	if (block->is_over && block->buffer_cursor >= block->buffer_size)
-		return 0xFFFFFFFFFFFFFFFFLL;
+		return maxlong;
 	return block->buffer[blocks->buffer_cursor];
 }
 
-unsigned long long CMerge::pop_element(int block_num) {
+uint64_t CMerge::pop_element(int block_num) {
 	struct block *block = blocks + block_num;
-	unsigned long long ret = block->buffer[block->buffer_cursor];
+	uint64_t ret = block->buffer[block->buffer_cursor];
 	if (++block->buffer_cursor >= block->buffer_size && block->is_over != 1)
 		read_block(block_num);
 	return ret;
 }
 
-unsigned long long CMerge::get_element(void) {
+uint64_t CMerge::get_element(void) {
 	if (++elemen_count > num_elements)
-		return 0xFFFFFFFFFFFFFFFFLL;
-	unsigned long long element, min_element = 0xFFFFFFFFFFFFFFFFLL;
+		return maxlong;
+	uint64_t element, min_element = maxlong;
 	int element_id = -1;
 	for (int i = 0; i < num_blocks; i++)
 		if ((element = get_element(i)) < min_element) {
@@ -114,15 +117,15 @@ unsigned long long CMerge::get_element(void) {
  int main()
  {
  FILE *f = fopen("test.bin","wb");
- unsigned long long *tmp = new unsigned long long[10];
+ uint64_t *tmp = new uint64_t[10];
  for (int j=0; j<3; j++) {
  for (int i=0; i<10; i++)
  tmp[i] = i;
- fwrite(tmp, sizeof(unsigned long long), 10, f);
+ fwrite(tmp, sizeof(uint64_t), 10, f);
  }
  for (int i=0; i<7; i++)
  tmp[i] = i;
- fwrite(tmp, sizeof(unsigned long long), 7, f);
+ fwrite(tmp, sizeof(uint64_t), 7, f);
 
  f = freopen("test.bin", "rb", f);
  CMerge c(f, 10, 129);

@@ -46,8 +46,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 char *q = (char *)NULL;
 char *query = (char *)NULL;
 int type = 0;
-long long max_size = -1;
-long long min_size = -1;
+int64_t max_size = -1;
+int64_t min_size = -1;
 int added = 0;
 int upd = 0;
 int bitrate = -1;
@@ -104,10 +104,10 @@ void sql_get_search_results(const char *uids)
 				else if(type) end += sprintf(end,"type=%d AND ",type);
 				if(type!=2 && (max_size>-1 || min_size>-1 || bitrate>-1)) {
 						if(max_size>-1 && max_size == min_size)
-								end += sprintf(end,"size=%llu AND ",max_size);
+								end += sprintf(end,"size=%lld AND ", (long long)max_size);
 						else {
-								if(max_size>-1) end += sprintf(end,"size<=%llu AND ",max_size);
-								if(min_size>-1) end += sprintf(end,"size>=%llu AND ",min_size);
+								if(max_size>-1) end += sprintf(end,"size<=%lld AND ", (long long)max_size);
+								if(min_size>-1) end += sprintf(end,"size>=%lld AND ", (long long)min_size);
 						}
 						if(bitrate>0 && (!type || type == 3 || type == 1)) end += sprintf(end,"add_info&16383>=%d AND ",bitrate);
 				}
@@ -366,8 +366,8 @@ int main(int argc, char **argv)
 						if((f = fopen(LOG_PATH "files_query.log","ab"))) {
 								flock(fileno(f), LOCK_EX);
 								fprintf(f,"%s:%d stime=>%.3f ctime=>%.3f type=>%d",getenv("REMOTE_ADDR"),(int)time(NULL),search_time,create_time,type);
-								if(max_size>-1) fprintf(f," max_size=> %llu",max_size);
-								if(min_size>-1) fprintf(f," min_size=> %llu",min_size);
+								if(max_size>-1) fprintf(f," max_size=> %lld", (long long)max_size);
+								if(min_size>-1) fprintf(f," min_size=> %lld", (long long)min_size);
 								if(bitrate>-1) fprintf(f," bitrate=> %d",bitrate);
 								fprintf(f," query=> %s\n",q);
 								flock(fileno(f), LOCK_UN);

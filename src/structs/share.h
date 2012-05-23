@@ -17,6 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #ifndef SHARE_H_
 #define SHARE_H_
 
+#include <string>
+
 #include "../db/mydb.h"
 
 class Share {

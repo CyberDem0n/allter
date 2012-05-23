@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 
 extern char *q;
 extern int type, added, bitrate;
-extern long long min_size, max_size;
+extern int64_t min_size, max_size;
 
 void print_encoded_string(char *str)
 {
@@ -65,9 +65,10 @@ void print_file(const char *filename)
 		int len = lseek(in_fd, 0, SEEK_END);
 		char *tmp = new char[len];
 		lseek(in_fd, 0, SEEK_SET);
-		if (read(in_fd, tmp, len*sizeof(char))==len*sizeof(char));
-		fflush(stdout);
-		if (write(1, tmp, len*sizeof(char))==len*sizeof(char));
+		if (read(in_fd, tmp, len*sizeof(char))==len*sizeof(char)) {
+			fflush(stdout);
+			if (write(STDOUT_FILENO, tmp, len*sizeof(char))==len*sizeof(char)) {}
+		}
 		close(in_fd);
 }
 
@@ -139,10 +140,10 @@ void print_search_form()
 							<tr>\n\
 								<td align=right>\n\
 									<span class=name>and it's size from </span>\n");
-		if(min_size>-1) printf("<input type=text size=10 name=min_size value=\"%llu\">\n",min_size);
+		if(min_size>-1) printf("<input type=text size=10 name=min_size value=\"%lld\">\n", (long long)min_size);
 		else printf("<input type=text size=10 name=min_size>\n");
 		printf("<span class=name>up to </span>\n");
-		if(max_size>-1) printf("<input type=text size=10 name=max_size value=\"%llu\">\n",max_size);
+		if(max_size>-1) printf("<input type=text size=10 name=max_size value=\"%lld\">\n", (long long)max_size);
 		else printf("<input type=text size=10 name=max_size>\n");
 		printf("<span class=name>bytes</span>\n\
 									<br>\n\

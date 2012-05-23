@@ -85,7 +85,7 @@ const char *CSubstrings::stringAt(int n) {
 	return NULL;
 }
 
-const size_t CSubstrings::strlenAt(int n) {
+size_t CSubstrings::strlenAt(int n) {
 	if (n < size)
 		return _substrings[n].length;
 	return -1;

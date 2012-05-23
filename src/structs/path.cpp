@@ -59,8 +59,7 @@ bool Path::goUp() {
 		return false;
 	clearList();
 	clearDirs();
-	_deep--;
-	_path[_path_info[_deep].length] = '\0';
+	_path[_path_info[--_deep].length] = '\0';
 	return true;
 }
 
@@ -72,14 +71,13 @@ bool Path::detectSelfLooping() {
 	return false;
 }
 
-void Path::clearList(bool doDelete) {
+void Path::clearList() {
 	std::list<Dirent *> *_list = _path_info[_deep]._list;
 	if (NULL == _list) return;
 	std::list<Dirent *>::iterator it;
 	for (it = _list->begin(); it != _list->end(); it++)
 		delete *it;
 	_list->clear();
-	if (!doDelete) return;
 	delete _path_info[_deep]._list;
 	_path_info[_deep]._list = NULL;
 }
@@ -88,14 +86,10 @@ void Path::createList() {
 	_path_info[_deep]._list = new std::list<Dirent *>;
 }
 
-void Path::clearDirs(bool doDelete) {
+void Path::clearDirs() {
 	std::list<Dirent *> *_list = _path_info[_deep]._dirs;
 	if (NULL == _list) return;
-/*	std::list<Dirent *>::iterator it;
-	for (it = _list->begin(); it != _list->end(); it++)
-		delete *it;*/
 	_list->clear();
-	if (!doDelete) return;
 	delete _path_info[_deep]._dirs;
 	_path_info[_deep]._dirs = NULL;
 }
@@ -111,7 +105,7 @@ void Path::createLists() {
 
 uint64_t Path::setList(std::vector<Dirent *> &list) {
 	uint64_t total_size = 0;
-	std::list<Dirent *> *_list = _path_info[_deep]._list;
+	std::list<Dirent *> *_list = getList();
 	struct MD5Context context;
 	std::vector<Dirent *>::iterator it;
 
