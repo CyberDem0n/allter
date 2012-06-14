@@ -236,8 +236,8 @@ char *CSearcher::doQuery(const char type, const char *query) {
 	off_t offset = 0;
 	size_t size = 0;
 	for (int i=0; i<s.size; i++) {
-		const unsigned char *str = (const unsigned char *)s.stringAt(i);
-		int len = s.strlenAt(i) - minus_len;
+		const unsigned char *str = s.indexAt(i);
+		int len = s.indexlenAt(i) - minus_len;
 
 		for (int j=0; j<len; j++) {
 			unsigned short id2_pos = bswap_16(*((unsigned short *)(str + j)));

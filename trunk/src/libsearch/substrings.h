@@ -16,17 +16,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 */
 #ifndef __SUBSTRINGS_H__
 #define __SUBSTRINGS_H__
+
 class CSubstrings {
 private:
-	static char good_chars[256];
-	static int good_chars_inited;
+	static unsigned char good_chars[65536];
+	static bool good_chars_inited;
 
+	bool _only_index;
 	struct substrings {
+		const unsigned char *index;
 		const char *string;
 		size_t length;
+		size_t index_length;
 	} *_substrings;
-	char *_substrings_container;
-	void getSubstrings(void);
+	unsigned char *_indexes_container;
+	char * _substrings_container;
+	void getSubstrings();
 	int _max_len_id;
 	int _size;
 	size_t _max_len;
@@ -36,9 +41,12 @@ public:
 	CSubstrings(const char *);
 	CSubstrings(const char *, size_t);
 	~CSubstrings();
+	static bool initCharsetTable(const char *charset_table);
 	static void init(void);
 	const char *stringAt(int);
+	const unsigned char *indexAt(int);
 	size_t strlenAt(int);
+	size_t indexlenAt(int);
 	const int &size;
 	const size_t &max_len;
 };

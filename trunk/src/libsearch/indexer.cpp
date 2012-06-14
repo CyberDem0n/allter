@@ -77,8 +77,8 @@ void CIndexer::addString(const char *string, unsigned int offset, size_t length)
 	CSubstrings sub(string, length);
 
 	for (int i = 0; i < sub.size; i++) {
-		const unsigned char *str = (const unsigned char *)sub.stringAt(i);
-		int len = sub.strlenAt(i) - 3;
+		const unsigned char *str = sub.indexAt(i);
+		int len = sub.indexlenAt(i) - 3;
 
 		for (int j = 0; j <= len; j++) {
 			dwords[dwc % dwords_size] = ((uint64_t)bswap_32(*((unsigned int *)(str+j))) << 32) | ((uint64_t) offset);
