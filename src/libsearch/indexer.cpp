@@ -76,7 +76,7 @@ void CIndexer::initBlock(void) {
 void CIndexer::addString(const char *string, unsigned int offset, size_t length) {
 	CSubstrings sub(string, length);
 
-	for (int i = 0; i < sub.size; i++) {
+	for (size_t i = 0; i < sub.size; i++) {
 		const unsigned char *str = sub.indexAt(i);
 		int len = sub.indexlenAt(i) - 3;
 
@@ -108,14 +108,6 @@ void CIndexer::saveBlock(ssize_t size) {
 	}
 }
 
-void CIndexer::flushTemporaryData() {
-	saveBlock(dwc % dwords_size);
-
-	delete[] dwords;
-	close(f);
-	f = open(name_tmp, O_RDONLY);
-}
-
 void CIndexer::iwrite() {
 	FILE *id2, *id4, *idx;
 	unsigned int temp, prev1, prev4, prev4_offset, prev_offset, idx_count, id4_count;
@@ -125,7 +117,11 @@ void CIndexer::iwrite() {
 	struct index4 *buffer4 = new struct index4[buf_size];
 	unsigned int *bufferx = new unsigned int[buf_size];
 
-	flushTemporaryData();
+	saveBlock(dwc % dwords_size);
+
+	delete[] dwords;
+	close(f);
+	f = open(name_tmp, O_RDONLY);
 
 	strcpy(name_tmp + base_name_len, ".id2t"); id2 = fopen(name_tmp, "wb");
 	strcpy(name_tmp + base_name_len, ".id4t"); id4 = fopen(name_tmp, "wb");
@@ -150,7 +146,7 @@ void CIndexer::iwrite() {
 					assert(fwrite(buffer4, sizeof(struct index4), buf_size, id4) == buf_size);
 			}
 			prev4 = temp;
-			buffer4[id4_count % buf_size].chr = (unsigned short) prev4;
+			buffer4[id4_count % buf_size].word = (unsigned short) prev4;
 			buffer4[id4_count % buf_size].offset = idx_count << 2;
 			prev_offset = idx_count;
 
@@ -170,7 +166,7 @@ void CIndexer::iwrite() {
 		}
 
 		if ((++idx_count) % buf_size == 0)
-			if (fwrite(bufferx, sizeof(unsigned int), buf_size, idx) != buf_size) {}
+			assert(fwrite(bufferx, sizeof(unsigned int), buf_size, idx) == buf_size);
 	}
 
 	assert(fwrite(bufferx, sizeof(unsigned int), idx_count % buf_size, idx) == idx_count % buf_size);

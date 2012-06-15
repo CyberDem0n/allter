@@ -30,7 +30,6 @@ private:
 	char *name_tmp;
 	void initBlock(void);
 	void saveBlock(ssize_t size);
-	void flushTemporaryData();
 public:
 	CIndexer(const char *, int);
 	~CIndexer();
