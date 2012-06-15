@@ -25,7 +25,7 @@ struct index2 {
 }__attribute__((packed));
 
 struct index4 {
-	unsigned short chr;
+	unsigned short word;
 	unsigned int offset;
 	unsigned int size;
 }__attribute__((packed));
@@ -53,6 +53,7 @@ private:
 	bool wstrstr(const char *, CSubstrings &);
 	bool bstrstr(const char *, CSubstrings &);
 
+	int binarySearch(unsigned int, unsigned int, unsigned short, bool);
 	bool find_chain4(const unsigned char *, unsigned int, unsigned int, unsigned int &, unsigned int &);
 	bool find_chain3(const unsigned char *, unsigned int, unsigned int, unsigned int &, unsigned int &);
 public:

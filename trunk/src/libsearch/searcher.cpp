@@ -106,7 +106,7 @@ bool CSearcher::remapIndexes() {
 }
 
 bool CSearcher::mstrstr(const char *buf, CSubstrings &query) {
-	for (int j=0; j<query.size; j++)
+	for (size_t j=0; j<query.size; j++)
 		if (NULL == strstr(buf, query.stringAt(j)))
 			return false;
 	return true;
@@ -157,57 +157,45 @@ int CSearcher::check_query(const char *str) {
 	return 0;
 }
 
-bool CSearcher::find_chain3(const unsigned char *str, unsigned int start, unsigned int end, unsigned int &offset, unsigned int &size) {
-	bool found = false;
-	unsigned int tmp, l = start, r = end;
-	unsigned short idx4 = (unsigned short)str[2];
-
-	while (r-l > 1) {
-		tmp = (unsigned int)((r+l)/2);
-		if ((_id4[tmp].chr>>8) == idx4) {found=true;break;}
-		if ((_id4[tmp].chr>>8) < idx4) l = tmp;
-		else r = tmp;
+int CSearcher::binarySearch(unsigned int left, unsigned int right, unsigned short key, bool fuzzy = false) {
+	unsigned int middle;
+	while (left <= right) {
+		middle = (left + right)/2;
+		if (_id4[middle].word == key) return middle;
+		if (_id4[middle].word > key) right = middle - 1;
+		else left = middle + 1;
 	}
-	if (!found) {
-		if ((_id4[l].chr>>8) == idx4) tmp = l;
-		else if ((_id4[r].chr>>8) == idx4) tmp = r;
+	return fuzzy?middle:-1;
+}
+
+bool CSearcher::find_chain3(const unsigned char *str, unsigned int start, unsigned int end, unsigned int &offset, unsigned int &size) {
+	unsigned short key = ((unsigned short)str[2]) << 8;
+
+	unsigned int middle = binarySearch(start, end, key, true);
+	if (_id4[middle].word < key) {
+		if (middle < end) middle++;
 		else return false;
 	}
+	key |= 0xFF;
+	if (_id4[middle].word > key) return false;
 
-	found = false;
-	for (unsigned int i=tmp; i>=start; i--)
-		if ((_id4[i].chr>>8) != idx4) {
-			offset = _id4[i+1].offset;
-			found = true;
-			break;
-		}
-	if (!found) offset = _id4[start].offset;
+	offset = _id4[middle].offset;
+	unsigned int right = middle + 0xFF;
+	if (right > end) right = end;
 
-	for (unsigned int i=tmp; i<end; i++)
-		if ((_id4[i].chr>>8) != idx4) {
-			size = (_id4[i].offset - offset)>>2;
-			return true;
-		}
-	size = ((_id4[end-1].offset - offset)>>2)+_id4[end-1].size;
+	middle = binarySearch(middle, right, key, true);
+	if (_id4[middle].word > key) middle--;
+	size = (_id4[middle].offset - offset)/sizeof(int) + _id4[middle].size;
+
 	return true;
 }
 
-bool CSearcher::find_chain4(const unsigned char *str, unsigned int start, unsigned int end, unsigned int &offset, unsigned int &size) {
-	unsigned int tmp, l = start, r = end;
-	unsigned short idx4 = (((unsigned short)str[2])<<8) | (unsigned short)str[3];
-
-	while (r-l > 1) {
-		tmp = (unsigned int)((r+l)/2);
-		if (_id4[tmp].chr == idx4) goto RET4;
-		if (_id4[tmp].chr < idx4) l = tmp;
-		else r = tmp;
-	}
-	if (_id4[l].chr == idx4) tmp = l;
-	else if (_id4[r].chr == idx4) tmp = r;
-	else return false;
-RET4:
-	offset = _id4[tmp].offset;
-	size = _id4[tmp].size;
+bool CSearcher::find_chain4(const unsigned char *str, unsigned int left, unsigned int right, unsigned int &offset, unsigned int &size) {
+	unsigned short key = bswap_16(*((unsigned short *)(str + 2)));
+	int middle = binarySearch(left, right, key);
+	if (middle < 0) return false;
+	offset = _id4[middle].offset;
+	size = _id4[middle].size;
 	return true;
 }
 
@@ -234,8 +222,8 @@ char *CSearcher::doQuery(const char type, const char *query) {
 	}
 
 	off_t offset = 0;
-	size_t size = 0;
-	for (int i=0; i<s.size; i++) {
+	size_t i, size = 0;
+	for (i=0; i<s.size; i++) {
 		const unsigned char *str = s.indexAt(i);
 		int len = s.indexlenAt(i) - minus_len;
 
@@ -278,7 +266,7 @@ char *CSearcher::doQuery(const char type, const char *query) {
 	int ret_len = 0, results = 0;
 	char *ret = new char [max_results * 12];
 	*ret = '\0';
-	for (unsigned int i=0; i<size; i++) {
+	for (i=0; i<size; i++) {
 		if (fseek(f, offsets[i], SEEK_SET) == -1 || !fgets(buf, MAX_STR_LEN, f))
 			continue;
 

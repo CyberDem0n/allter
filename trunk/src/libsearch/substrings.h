@@ -33,7 +33,7 @@ private:
 	char * _substrings_container;
 	void getSubstrings();
 	int _max_len_id;
-	int _size;
+	size_t _size;
 	size_t _max_len;
 public:
 	const size_t length;
@@ -43,11 +43,11 @@ public:
 	~CSubstrings();
 	static bool initCharsetTable(const char *charset_table);
 	static void init(void);
-	const char *stringAt(int);
-	const unsigned char *indexAt(int);
-	size_t strlenAt(int);
-	size_t indexlenAt(int);
-	const int &size;
+	const char *stringAt(unsigned int);
+	const unsigned char *indexAt(unsigned int);
+	size_t strlenAt(unsigned int);
+	size_t indexlenAt(unsigned int);
+	const size_t &size;
 	const size_t &max_len;
 };
 

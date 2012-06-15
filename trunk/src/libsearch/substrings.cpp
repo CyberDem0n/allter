@@ -105,25 +105,25 @@ get_substr_ret:
 	delete [] wstring;
 }
 
-const char *CSubstrings::stringAt(int n) {
+const char *CSubstrings::stringAt(unsigned int n) {
 	if (!_only_index && n < size)
 		return _substrings[n].string;
 	return NULL;
 }
 
-const unsigned char *CSubstrings::indexAt(int n) {
+const unsigned char *CSubstrings::indexAt(unsigned int n) {
 	if (n < size)
 		return _substrings[n].index;
 	return NULL;
 }
 
-size_t CSubstrings::strlenAt(int n) {
+size_t CSubstrings::strlenAt(unsigned int n) {
 	if (!_only_index && n < size)
 		return _substrings[n].length;
 	return -1;
 }
 
-size_t CSubstrings::indexlenAt(int n) {
+size_t CSubstrings::indexlenAt(unsigned int n) {
 	if (n < size)
 		return _substrings[n].index_length;
 	return -1;

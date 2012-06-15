@@ -93,7 +93,7 @@ void sql_get_search_results(const char *uids)
 						end = strmov(end, "' AND ");
 				} else {
 						CSubstrings s(q);
-						for(int i=0;i<s.size;i++) {
+						for(size_t i=0;i<s.size;i++) {
 								end = strmov(end, "files.name LIKE '%");
 								end += mysql_real_escape_string(&mysql, end, s.stringAt(i), s.strlenAt(i));
 								end = strmov(end, "%' AND ");
@@ -222,7 +222,7 @@ int print_search_results()
 
 int check_query_type()
 {
-		int i,len,gc1 = 0;
+		size_t i,len,gc1 = 0;
 		len = strlen(q);
 		if(!len) return 0;
 		for(i=0;i<len;i++)
