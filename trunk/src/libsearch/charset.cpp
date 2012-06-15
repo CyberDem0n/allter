@@ -40,7 +40,7 @@ bool CharsetDefinitionParser::error(const char *formatstr, ...) {
 	va_list ap;
 	va_start(ap, formatstr);
 	int size = vsnprintf(errstr, sizeof(errstr), formatstr, ap);
-	if ((ssize_t)size < sizeof(errstr)) {
+	if ((size_t)size < sizeof(errstr)) {
 		char sErrorBuffer[32];
 		strncpy ( sErrorBuffer, current, sizeof(sErrorBuffer) );
 		sErrorBuffer [ sizeof(sErrorBuffer)-1 ] = '\0';

@@ -89,7 +89,7 @@ uint64_t CMerge::get_element(int block_num) {
 	struct block *block = blocks + block_num;
 	if (block->is_over && block->buffer_cursor >= block->buffer_size)
 		return maxlong;
-	return block->buffer[blocks->buffer_cursor];
+	return block->buffer[block->buffer_cursor];
 }
 
 uint64_t CMerge::pop_element(int block_num) {

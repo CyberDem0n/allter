@@ -163,7 +163,7 @@ bool CSubstrings::initCharsetTable(const char *charset_table) {
 
 void CSubstrings::init(void) {
 	setlocale(LC_ALL,"");
-	if (initCharsetTable("0..9, a..z->A..Z, U+430..U+44F->U+410..U+42F, U+451->U+401, ~, !, @, #, $, %, ^, &, (, ), -, +, _, =, ., ', ;, U+002C"))
+	if (initCharsetTable("0..9, a..z->A..Z, U+430..U+44F->U+410..U+42F, U+451->U+401, ~, !, @, #, $, %, ^, &, (, ), -, +, _, =, ., ', ;, `, U+002C"))
 		good_chars_inited = true;
 }
 
