@@ -104,8 +104,8 @@ void quickSort(uint64_t *x, int size) {
 		}
 	} while (i <= j);
 
-	if ( j > 0 ) quickSort(x, j);
-	if ( size > i ) quickSort(x+i, size-i);
+	if (j > 0) quickSort(x, j+1);
+	if (size > i) quickSort(x+i, size-i);
 }
 
 void CIndexer::saveBlock(ssize_t size) {
