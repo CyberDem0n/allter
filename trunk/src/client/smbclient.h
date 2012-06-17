@@ -23,13 +23,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <libsmbclient.h>
 
 #include "iclient.h"
+#include "../config.h"
 
 class SmbClient : public IClient {
 private:
 	int _debuglevel;
 	char _workgroup[255];
 	char *_path;
-	char _smb_path[2048];
+	char _smb_path[MAX_PATH*4];
 	SMBCCTX *_ctx;
 	SMBCSRV *_srv;
 	std::vector<struct my_dirent> _dir_list;

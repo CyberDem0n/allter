@@ -144,7 +144,7 @@ static NTSTATUS dir_list_fn(const char *mnt, struct file_info *finfo, const char
 
 bool SmbClient::dirList(const char *dir) {
 	int dirlen = 0;
-	char netpath[2048], *targetpath;
+	char netpath[MAX_PATH*4], *targetpath;
 	struct cli_state *targetcli;
 	NTSTATUS status;
 	TALLOC_CTX *frame = talloc_stackframe();

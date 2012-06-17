@@ -158,7 +158,7 @@ int CSearcher::check_query(const char *str) {
 }
 
 int CSearcher::binarySearch(unsigned int left, unsigned int right, unsigned short key, bool fuzzy = false) {
-	unsigned int middle;
+	unsigned int middle = -1;
 	while (left <= right) {
 		middle = (left + right)/2;
 		if (_id4[middle].word == key) return middle;
@@ -250,7 +250,7 @@ char *CSearcher::doQuery(const char type, const char *query) {
 
 	if (size < 1) return (char *)""; // No results
 
-	size_t align;
+	size_t align = 0;
 	void *idx = mapFile(idx_name, offset, size, align);
 	if (MAP_FAILED == idx) return (char *)NULL;
 

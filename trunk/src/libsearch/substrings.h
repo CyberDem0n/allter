@@ -17,6 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #ifndef __SUBSTRINGS_H__
 #define __SUBSTRINGS_H__
 
+#include "../config.h"
+
 class CSubstrings {
 private:
 	static unsigned char good_chars[65536];
@@ -28,9 +30,9 @@ private:
 		const char *string;
 		size_t length;
 		size_t index_length;
-	} *_substrings;
-	unsigned char *_indexes_container;
-	char * _substrings_container;
+	} _substrings[MAX_NAME/2];
+	unsigned char _indexes_container[MAX_NAME];
+	char _substrings_container[MAX_NAME*4];
 	void getSubstrings();
 	int _max_len_id;
 	size_t _size;

@@ -17,6 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <string>
 
 #include "mydb.h"
@@ -45,7 +46,7 @@ char *MyDB::escape(const char *string) {
 bool MyDB::query(const char *formatstr, va_list &ap) {
 	bool ret = true;
 	char *statement;
-	vasprintf(&statement, formatstr, ap);
+	assert(vasprintf(&statement, formatstr, ap) >=0);
 	va_end(ap);
 //	fprintf(stderr, "mysql_query:%s\n", statement);
 	if (mysql_real_query(&_mysql, statement, strlen(statement))) {

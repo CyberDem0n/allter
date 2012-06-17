@@ -22,16 +22,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 
 #include "dirent.h"
 #include "../db/mydb.h"
-
-#define MAX_PATH 1024
-#define MAX_DEEP 32
+#include "../config.h"
 
 class Path {
 private:
 	MyDB &_db;
 	unsigned int _share;
 	int _deep;
-	char _path[MAX_PATH];
+	char _path[MAX_PATH*4];
 	size_t _pathlen;
 	struct path_info {
 		unsigned int uid, p2f;

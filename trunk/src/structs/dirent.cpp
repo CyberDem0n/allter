@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <wctype.h>
 
 #include "dirent.h"
+#include "../config.h"
 
 Dirent::Dirent(MyDB &db, struct my_dirent &item) : _db(db), _escaped_name(NULL), _upper_name(NULL) {
 	_name = item.name;
@@ -49,16 +50,13 @@ const char *Dirent::upname() const {
 
 	if (_namelen < 1) return NULL;
 
-	wchar_t *it, *tmp = new wchar_t[len];
+	wchar_t tmp[MAX_NAME];
+	wchar_t *it = tmp;
 	char *ret;
 
-	if ((it = tmp) == NULL) return NULL;
-
 	if ((mbstowcs(tmp, str, len) < 1) ||
-			(ret = new char[len]) == NULL) {
-		delete [] tmp;
+			(ret = new char[len]) == NULL)
 		return NULL;
-	}
 
 	while (*it) {
 		*it = towupper(*it);
@@ -70,7 +68,6 @@ const char *Dirent::upname() const {
 		ret = NULL;
 	}
 
-	delete [] tmp;
 	return ret;
 }
 
