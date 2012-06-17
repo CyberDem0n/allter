@@ -25,23 +25,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include "charset.h"
 
 CSubstrings::CSubstrings(const char *str) :
-	_only_index(false), _substrings(NULL), length(strlen(str)), string(str),
+	_only_index(false), length(strlen(str)), string(str),
 			size(_size), max_len(_max_len) {
 	getSubstrings();
 }
 
 CSubstrings::CSubstrings(const char *str, size_t length) :
-	_only_index(true), _substrings(NULL), length(length), string(str),
+	_only_index(true), length(length), string(str),
 			size(_size), max_len(_max_len) {
 	getSubstrings();
 }
 
 CSubstrings::~CSubstrings() {
-	if (_substrings) {
-		if (!_only_index) delete [] _substrings_container;
-		delete [] _indexes_container;
-		delete [] _substrings;
-	}
 }
 
 void CSubstrings::getSubstrings() {
@@ -54,22 +49,16 @@ void CSubstrings::getSubstrings() {
 	_max_len_id = -1;
 
 	bool was_bad = true;
-	wchar_t *wstring = new wchar_t[length + 1];
+	wchar_t wstring[MAX_NAME];
 	wchar_t *p = wstring;
-	size_t wlength = mbstowcs(wstring, string, length);
-	if (wlength < 1)
-		goto get_substr_ret;
+	size_t wlength = mbstowcs(wstring, string, MAX_NAME);
+	if (wlength < 1) return;
 
 	wstring[wlength++] = L'\0';
 
 	mbstate_t ps;
-
-	_substrings = new struct substrings [wlength/2];
-	_indexes_container = new unsigned char [wlength ];
-	if (!_only_index) {
-		_substrings_container = new char [length + 1];
+	if (!_only_index)
 		memset(&ps, '\0', sizeof(ps));
-	}
 
 	while (true) {
 		if ('\0' != good_chars[*p]) {
@@ -100,9 +89,6 @@ void CSubstrings::getSubstrings() {
 		}
 		if ('\0' == *(p++)) break;
 	}
-
-get_substr_ret:
-	delete [] wstring;
 }
 
 const char *CSubstrings::stringAt(unsigned int n) {
@@ -163,7 +149,7 @@ bool CSubstrings::initCharsetTable(const char *charset_table) {
 
 void CSubstrings::init(void) {
 	setlocale(LC_ALL,"");
-	if (initCharsetTable("0..9, a..z->A..Z, U+430..U+44F->U+410..U+42F, U+451->U+401, ~, !, @, #, $, %, ^, &, (, ), -, +, _, =, ., ', ;, `, U+002C"))
+	if (initCharsetTable(CHARSET_TABLE))
 		good_chars_inited = true;
 }
 

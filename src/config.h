@@ -14,38 +14,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>
 */
-#ifndef __MERGE_H__
-#define __MERGE_H__
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
-#include <stdint.h>
+#define MAX_NAME 256
+#define MAX_PATH 1024
+#define MAX_DEEP 32
+#define CHARSET_TABLE "0..9, a..z->A..Z, U+430..U+44F->U+410..U+42F, U+451->U+401, ~, !, @, #, $, %, ^, &, (, ), -, +, _, =, ., ', ;, `, U+002C"
 
-struct block {
-	size_t block_size;
-	off_t block_offset;
-	void *mmaped_buf;
-	uint64_t *buffer;
-	off_t buffer_offset;
-	size_t buffer_size;
-	off_t buffer_cursor;
-	int mmaped_len;
-	bool is_over;
-};
-
-class CMerge {
-private:
-	int _fd;
-	unsigned int num_elements;
-	unsigned int elemen_count;
-	int num_blocks;
-	size_t block_size;
-	size_t buffer_size;
-	struct block *blocks;
-	void init_block(int, int);
-	void read_block(int);
-public:
-	CMerge(int, int, int);
-	~CMerge();
-	uint64_t get_element(void);
-};
-
-#endif // __MERGE_H__
+#endif /* CONFIG_H_ */

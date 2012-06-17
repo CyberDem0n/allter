@@ -187,9 +187,9 @@ void Path::updateInDB() {
 	MYSQL_ROW row;
 
 	bool row_changed = false;
-	char *name;
-	unsigned char type;
-	unsigned int uid;
+	char *name = NULL;
+	unsigned char type = 0;
+	unsigned int uid = 0;
 
 	bool delete_new_items = false;
 	std::list<Dirent *> *new_items;

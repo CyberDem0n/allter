@@ -89,16 +89,27 @@ void CIndexer::addString(const char *string, unsigned int offset, size_t length)
 	}
 }
 
-static int compare(const void *elem1, const void *elem2) {
-	uint64_t *p1 = (uint64_t *)elem1;
-	uint64_t *p2 = (uint64_t *)elem2;
-	if (*p1 == *p2) return 0;
-	if (*p1 < *p2) return -1;
-	return 1;
+void quickSort(uint64_t *x, int size) {
+	int i=0, j=size-1;
+	uint64_t temp, p=x[size>>1];
+
+	do {
+		while (x[i] < p) i++;
+		while (x[j] > p) j--;
+
+		if (i <= j) {
+			temp = x[i];
+			x[i++] = x[j];
+			x[j--] = temp;
+		}
+	} while (i <= j);
+
+	if ( j > 0 ) quickSort(x, j);
+	if ( size > i ) quickSort(x+i, size-i);
 }
 
 void CIndexer::saveBlock(ssize_t size) {
-	qsort(dwords, size, sizeof(uint64_t), compare);
+	quickSort(dwords, size);
 
 	size *= sizeof(uint64_t);
 
@@ -111,11 +122,11 @@ void CIndexer::saveBlock(ssize_t size) {
 void CIndexer::iwrite() {
 	FILE *id2, *id4, *idx;
 	unsigned int temp, prev1, prev4, prev4_offset, prev_offset, idx_count, id4_count;
-	size_t buf_size = 32768;
+	const size_t buf_size = 32768;
 	uint64_t dwrds, prev = 0;
 
-	struct index4 *buffer4 = new struct index4[buf_size];
-	unsigned int *bufferx = new unsigned int[buf_size];
+	struct index4 buffer4[buf_size];
+	unsigned int bufferx[buf_size];
 
 	saveBlock(dwc % dwords_size);
 
@@ -178,9 +189,6 @@ void CIndexer::iwrite() {
 	assert(fwrite(&prev4_offset, sizeof(unsigned int), 1, id2) == 1);
 
 	delete c;
-
-	delete[] buffer4;
-	delete[] bufferx;
 
 	fclose(idx);
 	fclose(id4);
