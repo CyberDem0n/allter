@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 	offset = atol(argv[2]);
 	fseek(f, offset, SEEK_SET);
 
-	idx = new CIndexer(argv[1], 36000000); /* was 12000000 A5B !!! */
+	idx = new CIndexer(argv[1], 256*1024*1024); // Memory size for indexing = 256 Mb
 
 	while (fgets(buf, MAX_STR_LEN, f)) {
 //		printf("%s",buf);

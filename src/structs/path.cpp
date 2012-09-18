@@ -179,6 +179,27 @@ void Path::drop(const char *name) {
 	delete [] full_path;
 }
 
+void Path::addNewFiles(std::list<Dirent *> *new_items, std::list<unsigned int> &free_ids) {
+	std::list<Dirent *> *dirs = getDirs();
+	std::list<unsigned int>::iterator del = free_ids.begin();
+	for (std::list<Dirent *>::iterator it = new_items->begin(); it != new_items->end(); it++) {
+		Dirent *item = *it;
+
+		unsigned int del_uid = 0;
+		if (del != free_ids.end()) {
+			del_uid = *del;
+			del = free_ids.erase(del);
+		}
+
+		item->path(this->uid());
+		if (!item->insertIntoDB(del_uid))
+			continue;
+
+		if (item->type() == TYPE_DIRECTORY)
+			dirs->push_back(item);
+	}
+}
+
 void Path::updateInDB() {
 	if (!loadFromDB())
 		return;
@@ -186,30 +207,26 @@ void Path::updateInDB() {
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 
-	bool row_changed = false;
-	char *name = NULL;
-	unsigned char type = 0;
-	unsigned int uid = 0;
-
-	bool delete_new_items = false;
-	std::list<Dirent *> *new_items;
 	std::list<Dirent *> *list = getList();
-	std::list<Dirent *> *dirs = getDirs();
 	std::list<unsigned int> free_ids;
-	std::list<Dirent *>::iterator it = list->begin();
 
 	if (!_db.query("SELECT p2f.uid,f.uid,UCASE(name),type,size,mtime,add_info from paths2files p2f,files f WHERE path=%u AND file=f.uid ORDER BY UCASE(name)", this->uid())
 			|| !(res = _db.results())) {
-		new_items = list;
-		goto add_new_files;
+		addNewFiles(list, free_ids);
+		return;
 	}
 
+	bool row_changed = false;
 	if ((row = mysql_fetch_row(res)))
 		row_changed = true;
 
-	new_items = new std::list<Dirent *>;
-	delete_new_items = true;
+	std::list<Dirent *> new_items;
+	std::list<Dirent *> *dirs = getDirs();
+	std::list<Dirent *>::iterator it = list->begin();
 
+	char *name = NULL;
+	unsigned char type = 0;
+	unsigned int uid = 0;
 
 	while (row || it != list->end()) {
 		bool do_delete = false;
@@ -242,7 +259,7 @@ void Path::updateInDB() {
 				}
 			} else {
 				do_delete = true;
-				new_items->push_back(file); //insert new into db
+				new_items.push_back(file); //insert new into db
 			}
 
 			it++;
@@ -251,7 +268,7 @@ void Path::updateInDB() {
 			do_delete = true;
 			row_changed = true;
 		} else { // cmp < 0
-			new_items->push_back(*it); // insert new into db
+			new_items.push_back(*it); // insert new into db
 			it++;
 		}
 
@@ -267,31 +284,12 @@ void Path::updateInDB() {
 	}
 	mysql_free_result(res);
 
-add_new_files:
+	addNewFiles(&new_items, free_ids);
 
 	std::list<unsigned int>::iterator del = free_ids.begin();
-	for (it = new_items->begin(); it != new_items->end(); it++) {
-		Dirent *item = *it;
-
-		unsigned int del_uid = 0;
-		if (del != free_ids.end()) {
-			del_uid = *del;
-			del++;
-		}
-
-		item->path(this->uid());
-		if (!item->insertIntoDB(del_uid))
-			continue;
-
-		if (item->type() == TYPE_DIRECTORY)
-			dirs->push_back(item);
-	}
 
 	while (del != free_ids.end()) {
 		_db.query("DELETE FROM paths2files WHERE uid=%u", *del);
 		del++;
 	}
-
-	if (delete_new_items)
-		delete new_items;
 }

@@ -46,6 +46,7 @@ private:
 	void clearDirs();
 	void createDirsList();
 	void createLists();
+	void addNewFiles(std::list<Dirent *> *, std::list<unsigned int> &);
 
 public:
 	Path(MyDB &db, unsigned int share);

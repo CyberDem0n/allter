@@ -30,7 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include "searcher.h"
 #include "merge.h"
 
-CIndexer::CIndexer(const char *name, int size) : base_name(name), dwords_size(size) {
+CIndexer::CIndexer(const char *name, int size) : base_name(name), dwords_size(size/sizeof(uint64_t)/2) {
 	CSubstrings::init();
 	base_name_len = strlen(base_name);
 	name_tmp = new char [base_name_len + 6];
@@ -78,9 +78,9 @@ void CIndexer::addString(const char *string, unsigned int offset, size_t length)
 
 	for (size_t i = 0; i < sub.size; i++) {
 		const unsigned char *str = sub.indexAt(i);
-		int len = sub.indexlenAt(i) - 3;
+		int len = sub.indexlenAt(i) - 2;
 
-		for (int j = 0; j <= len; j++) {
+		for (int j = 0; j < len; j++) {
 			dwords[dwc % dwords_size] = ((uint64_t)bswap_32(*((unsigned int *)(str+j))) << 32) | ((uint64_t) offset);
 
 			if ((++dwc) % dwords_size == 0)
@@ -89,7 +89,7 @@ void CIndexer::addString(const char *string, unsigned int offset, size_t length)
 	}
 }
 
-void quickSort(uint64_t *x, int size) {
+inline void quickSort(uint64_t *x, int size) {
 	int i=0, j=size-1;
 	uint64_t temp, p=x[size>>1];
 
@@ -108,8 +108,36 @@ void quickSort(uint64_t *x, int size) {
 	if (size > i) quickSort(x+i, size-i);
 }
 
+void radixSortPass(uint64_t *keys, uint64_t *sorted, uint8_t bit, size_t count) {
+	const uint32_t numBuckets = 1 << 16;
+	uint32_t counts[numBuckets] = {0};
+	uint16_t key;
+
+	for (size_t i(0); i < count; ++i) {
+		key = keys[i] >> bit;
+		++counts[key]; // Simply increment.
+	}
+
+	for (uint32_t i(1); i < numBuckets; ++i)
+		counts[i] += counts[i-1];
+
+	for (int32_t i(count-1); i >= 0; --i) {
+		key = keys[i] >> bit;
+		sorted[--counts[key]] = keys[i];
+	}
+}
+
+void radixSort(uint64_t* keys, size_t count) {
+	// Make 2 sort passes of 16 bits each,
+	// 32 least significant bits already sorted
+	uint64_t *sorted = new uint64_t[count];
+	radixSortPass(keys, sorted, 32, count);
+	radixSortPass(sorted, keys, 48, count);
+	delete [] sorted;
+}
+
 void CIndexer::saveBlock(ssize_t size) {
-	quickSort(dwords, size);
+	if (size > 1) radixSort(dwords, size);
 
 	size *= sizeof(uint64_t);
 

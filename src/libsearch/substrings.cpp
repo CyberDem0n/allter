@@ -132,13 +132,14 @@ bool CSubstrings::initCharsetTable(const char *charset_table) {
 		for (int i = 0; i < size; i++) {
 			if (remap) {
 				if (!good_chars[it->remapStart + i])
-					good_chars[it->remapStart + i] = cnt++;
+					good_chars[it->remapStart + i] = cnt;
 				good_chars[it->start + i] = good_chars[it->remapStart + i];
 			} else {
 				if (!good_chars[it->start + i])
-					good_chars[it->start + i] = cnt++;
+					good_chars[it->start + i] = cnt;
 			}
-			if (cnt > 255) {
+
+			if (++cnt > 255) {
 				std::cerr << "Error, charset table can't contain more then 255 characters" << std::endl;
 				return false;
 			}

@@ -158,7 +158,7 @@ int CSearcher::check_query(const char *str) {
 }
 
 int CSearcher::binarySearch(unsigned int left, unsigned int right, unsigned short key, bool fuzzy = false) {
-	unsigned int middle = -1;
+	int middle = -1;
 	while (left <= right) {
 		middle = (left + right)/2;
 		if (_id4[middle].word == key) return middle;
@@ -238,7 +238,7 @@ char *CSearcher::doQuery(const char type, const char *query) {
 			if (id4_pos >= _id4_size) return (char *)NULL;
 
 			unsigned int tmp_off, tmp_size;
-			if (!(*this.*find_chain)(str + j, id4_pos, id4_pos+id2->id4_size, tmp_off, tmp_size))
+			if (!(*this.*find_chain)(str + j, id4_pos, id4_pos+id2->id4_size-1, tmp_off, tmp_size))
 				return (char *)""; // No results
 
 			if (!size || size > tmp_size) {
