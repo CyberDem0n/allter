@@ -21,11 +21,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <limits.h>
 
 #include "merge.h"
-
-const unsigned int maxint = 0xFFFFFFFFL;
-const uint64_t maxlong = (((uint64_t)maxint) << 32) | ((uint64_t)maxint);
 
 CMerge::CMerge(int fd, int blk_size, int mem_size) : _fd(fd), elemen_count(0), block_size(blk_size) {
 	num_elements = (int) (lseek(_fd, 0, SEEK_END) / sizeof(uint64_t));
@@ -82,11 +80,11 @@ void CMerge::read_block(int block_num) {
 
 uint64_t CMerge::get_element(void) {
 	struct block *block;
-	uint64_t min_element = maxlong;
+	uint64_t min_element = ULONG_LONG_MAX;
 	int block_num = -1;
 
 	if (++elemen_count > num_elements)
-		return maxlong;
+		return min_element;
 
 	for (int i = 0; i < num_blocks; i++) {
 		block = blocks + i;
@@ -99,7 +97,6 @@ uint64_t CMerge::get_element(void) {
 	if (block_num < 0) return min_element;
 
 	block = blocks + block_num;
-	min_element = block->buffer[block->buffer_cursor];
 
 	if (++block->buffer_cursor >= (off_t)block->buffer_size) {
 		if (block->buffer_offset < (off_t)block->block_size)
