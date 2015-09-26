@@ -1,0 +1,1 @@
+AllTer is a crawler of SMB network (Windows shares and UNIX systems running Samba) with www interface and external index for fast search with wildcards support.
